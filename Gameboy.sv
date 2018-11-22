@@ -133,8 +133,12 @@ localparam CONF_STR = {
    "O4,Inverted,No,Yes;",
 	"O3,Aspect ratio,4:3,16:9;",
 	"O78,Stereo mix,none,25%,50%,100%;",
-	"-;",
    "O2,Boot,Normal,Fast;",
+	"-;",
+	"O9,Square 1,On,Off;",
+	"OA,Square 2,On,Off;",
+	"OB,Wave,On,Off;",
+	"OC,Noise,On,Off;",
 	"-;",
 	"R6,Reset;",
 	"J1,A,B,Select,Start;",
@@ -447,8 +451,9 @@ gb gb (
 	.reset	    ( reset      ),
 	.clk         ( clk_cpu    ),   // the whole gameboy runs on 4mhnz
 
-	.fast_boot   ( status[2]  ),
-	.joystick    ( joystick   ),
+	.fast_boot      ( status[2]    ),
+	.sound_channels ( ~status[12:9] ),
+	.joystick       ( joystick     ),
 
 	// interface to the "external" game cartridge
 	.cart_addr   ( cart_addr  ),

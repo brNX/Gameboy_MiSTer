@@ -24,6 +24,7 @@ module gb (
 	input clk,
 	
 	input fast_boot,
+	input [3:0] sound_channels,
 	input [7:0] joystick,
 	
 	// cartridge interface
@@ -142,7 +143,8 @@ gbc_snd audio (
 	.s1_writedata  ( cpu_do       	),
 
    .snd_left 		( audio_l  			),
-	.snd_right  	( audio_r  			)
+	.snd_right  	( audio_r  			),
+	.snd_channels  ( sound_channels  )
 );
 
 // --------------------------------------------------------------------

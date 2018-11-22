@@ -19,7 +19,9 @@ entity gbc_snd is
 		s1_writedata	: in std_logic_vector(7 downto 0);
 		
 		snd_left			: out std_logic_vector(15 downto 0);
-		snd_right		: out std_logic_vector(15 downto 0)
+		snd_right		: out std_logic_vector(15 downto 0);
+		
+		snd_channels	: in std_logic_vector(3 downto 0) 
   );
 
 end gbc_snd;
@@ -933,15 +935,15 @@ begin
 		snd_left_in := (others => '0');
 		snd_right_in := (others => '0');
 
-		if ch_map(0) = '1' then snd_left_in  := snd_left_in  + ("00"&unsigned(sq1_wav)); end if;
-		if ch_map(1) = '1' then snd_left_in  := snd_left_in  + ("00"&unsigned(sq2_wav)); end if;
-		if ch_map(2) = '1' then snd_left_in  := snd_left_in  + ("00"&unsigned(wav_wav)); end if;
-		if ch_map(3) = '1' then snd_left_in  := snd_left_in  + ("00"&unsigned(noi_wav)); end if;
+		if ch_map(0) = '1' and snd_channels(0) = '1' then snd_left_in  := snd_left_in  + ("00"&unsigned(sq1_wav)); end if;
+		if ch_map(1) = '1' and snd_channels(1) = '1' then snd_left_in  := snd_left_in  + ("00"&unsigned(sq2_wav)); end if;
+		if ch_map(2) = '1' and snd_channels(2) = '1' then snd_left_in  := snd_left_in  + ("00"&unsigned(wav_wav)); end if;
+		if ch_map(3) = '1' and snd_channels(3) = '1' then snd_left_in  := snd_left_in  + ("00"&unsigned(noi_wav)); end if;
 
-		if ch_map(4) = '1' then snd_right_in := snd_right_in + ("00"&unsigned(sq1_wav)); end if;
-		if ch_map(5) = '1' then snd_right_in := snd_right_in + ("00"&unsigned(sq2_wav)); end if;
-		if ch_map(6) = '1' then snd_right_in := snd_right_in + ("00"&unsigned(wav_wav)); end if;
-		if ch_map(7) = '1' then snd_right_in := snd_right_in + ("00"&unsigned(noi_wav)); end if;
+		if ch_map(4) = '1' and snd_channels(0) = '1' then snd_right_in := snd_right_in + ("00"&unsigned(sq1_wav)); end if;
+		if ch_map(5) = '1' and snd_channels(1) = '1' then snd_right_in := snd_right_in + ("00"&unsigned(sq2_wav)); end if;
+		if ch_map(6) = '1' and snd_channels(2) = '1' then snd_right_in := snd_right_in + ("00"&unsigned(wav_wav)); end if;
+		if ch_map(7) = '1' and snd_channels(3) = '1' then snd_right_in := snd_right_in + ("00"&unsigned(noi_wav)); end if;
 
 		snd_left  <= (std_logic_vector(snd_left_in)  & "00000") * ch_vol(2 downto 0);
 		snd_right <= (std_logic_vector(snd_right_in) & "00000") * ch_vol(6 downto 4);
