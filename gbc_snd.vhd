@@ -245,11 +245,6 @@ begin
 
 			-- Rotate wave table on rising edge of wav_shift
 			if wav_shift and not wav_shift_r then
---				wav_temp := wav_ram(0);
---				for I in 0 to 30 loop
---					wav_ram(I) <= wav_ram(I+1);
---				end loop;
---				wav_ram(31) <= wav_temp;
 				wav_index <= wav_index + 1;
 			end if;
 			
@@ -963,9 +958,6 @@ begin
 
 			if wav_enable = '1' and wav_volsh /= "00" then
 				case wav_volsh is
---				when "01" => wav_wav <= wav_ram(0) & "00";
---				when "10" => wav_wav <= '0' & wav_ram(0) & '0';
---				when "11" => wav_wav <= "00" & wav_ram(0);
 				when "01" => wav_wav <= wav_ram(to_integer(wav_index)) & "00";
 				when "10" => wav_wav <= '0' & wav_ram(to_integer(wav_index)) & '0';
 				when "11" => wav_wav <= "00" & wav_ram(to_integer(wav_index));
