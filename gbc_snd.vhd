@@ -83,7 +83,7 @@ architecture SYN of gbc_snd is
 	signal sq2_trigger	: std_logic;								-- Sq2 trigger play note
 	signal sq2_lenchk		: std_logic;								-- Sq2 length check enable
 
-	signal sq2_fr2			: std_logic_vector(10 downto 0);		-- Sq2 frequency (shadow copy)
+	-- signal sq2_fr2			: std_logic_vector(10 downto 0);		-- Sq2 frequency (shadow copy)
 	signal sq2_vol			: std_logic_vector(3 downto 0);		-- Sq2 initial volume
 	signal sq2_playing	: std_logic;								-- Sq2 channel active
 	signal sq2_wav			: std_logic_vector(5 downto 0);		-- Sq2 output waveform
@@ -581,7 +581,7 @@ begin
 			sq1_out		:= '0';
 						
 			sq2_playing	<= '0';
-			sq2_fr2		<= (others => '0');
+		-- 	sq2_fr2		<= (others => '0');
 			sq2_fcnt		:= (others => '0');
 			sq2_phase	:= 0;
 			sq2_len		:= (others => '0');
@@ -619,7 +619,7 @@ begin
 						else
 							sq1_phase := 0;
 						end if;
-						sq1_fcnt := unsigned(sq1_fr2);
+						sq1_fcnt := unsigned(sq1_freq);
 					else
 						sq1_fcnt := acc_fcnt(sq1_fcnt'range);
 					end if;
@@ -634,7 +634,7 @@ begin
 						else
 							sq2_phase := 0;
 						end if;
-						sq2_fcnt := unsigned(sq2_fr2);
+						sq2_fcnt := unsigned(sq2_freq);
 					else
 						sq2_fcnt := acc_fcnt(sq2_fcnt'range);
 					end if;
@@ -917,8 +917,10 @@ begin
 
 			-- Check sample trigger and start playing
 			if sq2_trigger = '1' then
-				sq2_fr2 <= sq2_freq;
+				
+				-- sq2_fr2 <= sq2_freq;
 				sq2_fcnt := unsigned(sq2_freq);
+				
 				if not (sq2_svol = "00000" and sq2_envsgn = '0') then -- dac enabled
 					sq2_playing <= '1';
 				end if;
