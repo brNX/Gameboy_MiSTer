@@ -127,7 +127,7 @@ assign AUDIO_MIX = status[8:7];
 localparam CONF_STR = {
 	"GAMEBOY;;",
 	"-;",
-	"F,GB;",
+	"F,GBCGB;",
 	"-;",
    "O1,LCD tint,White,Yellow;",
    "O4,Inverted,No,Yes;",
