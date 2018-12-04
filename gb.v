@@ -21,7 +21,9 @@
 
 module gb (
    input reset,
-	input clk,
+	input ce_p,
+	input ce_n,
+	input clk_sys,
 	
 	input fast_boot,
 	input [7:0] joystick,
@@ -97,16 +99,42 @@ wire [7:0] cpu_di =
 		sel_if?{3'b111, if_r}:  // interrupt flag register
 		8'hff;
 
+wire clk = ce_p;
 wire cpu_wr_n;
 wire cpu_rd_n;
 wire cpu_iorq_n;
 wire cpu_m1_n;
 wire cpu_mreq_n;
 	
-GBse cpu (
+//GBse cpu (
+//	.RESET_n    ( !reset        ),
+//	.CLK_n      ( clk           ),
+//	.CLKEN      ( 1'b1          ),
+//	.WAIT_n     ( 1'b1          ),
+//	.INT_n      ( irq_n         ),
+//	.NMI_n      ( 1'b1          ),
+//	.BUSRQ_n    ( 1'b1          ),
+//   .M1_n       ( cpu_m1_n      ),
+//   .MREQ_n     ( cpu_mreq_n    ),
+//   .IORQ_n     ( cpu_iorq_n    ),
+//   .RD_n       ( cpu_rd_n      ),
+//   .WR_n       ( cpu_wr_n      ),
+//   .RFSH_n     (               ),
+//   .HALT_n     (               ),
+//   .BUSAK_n    (               ),
+//   .A          ( cpu_addr      ),
+//   .DI         ( cpu_di        ),
+//   .DO         ( cpu_do        )
+//);
+
+T80pa cpu (
 	.RESET_n    ( !reset        ),
-	.CLK_n      ( clk           ),
-	.CLKEN      ( 1'b1          ),
+	
+	.CLK      	( clk_sys       ),
+	.cen_p	 	( ce_p			 ),
+	.cen_n		( ce_n			 ),
+
+	
 	.WAIT_n     ( 1'b1          ),
 	.INT_n      ( irq_n         ),
 	.NMI_n      ( 1'b1          ),

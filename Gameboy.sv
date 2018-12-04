@@ -485,7 +485,10 @@ wire reset = (RESET | status[0] | status[6] | buttons[1] | cart_download | bk_lo
 // the gameboy itself
 gb gb (
 	.reset	    ( reset      ),
-	.clk         ( clk_cpu    ),   // the whole gameboy runs on 4mhnz
+	
+	.ce_p        ( ce_cpu	  ),
+	.ce_n			 ( ce_n  	  ),
+	.clk_sys     ( clk_sys    ),
 
 	.fast_boot   ( status[2]  ),
 	.joystick    ( joystick   ),
@@ -552,13 +555,14 @@ assign VGA_VS = video_vs;
 
 wire clk_cpu = clk_sys & ce_cpu;
 
-reg ce_pix, ce_cpu;
+reg ce_pix, ce_cpu, ce_n;
 always @(negedge clk_sys) begin
 	reg [2:0] div = 0;
 
 	div <= div + 1'd1;
 	ce_pix   <= !div[1:0];
 	ce_cpu   <= !div[2:0];
+	ce_n     <= (div == 4);
 end
 
 /////////////////////////  BRAM SAVE/LOAD  /////////////////////////////
