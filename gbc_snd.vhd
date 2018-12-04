@@ -246,7 +246,8 @@ begin
 				wav_trigger <= '0';
 				noi_trigger <= '0';
 			end if;
-		
+			
+
 			sq2_volchange <= '0';
 			sq1_volchange <= '0';
 			noi_volchange <= '0';
@@ -426,7 +427,10 @@ begin
 		end if;
 	end process;
 	
-	process(s1_addr)
+	process(s1_addr, sq1_swper, sq1_swdir, sq1_swshift, sq1_duty, sq1_svol, sq1_envsgn, sq1_envper, sq1_lenchk,
+				noi_playing, wav_playing, sq2_playing, sq1_playing, wav_enable, wav_volsh, wav_ram,
+				sq2_duty, sq2_svol, sq2_envsgn, sq2_envper, sq2_lenchk, snd_enable, wav_lenchk, noi_svol, noi_envsgn, noi_envper,
+				noi_freqsh, noi_short, noi_div, noi_lenchk, ch_vol, ch_map)
 	begin
 		case s1_addr is
 											-- Square 1
@@ -810,6 +814,7 @@ begin
 				if sq1_svol = "00000" and sq1_envsgn = '0' then -- dac disabled
 					sq1_playing <= '0';
 				end if;
+
 			end if;
 			
 			if sq1_lenchange = '1' then
