@@ -81,7 +81,7 @@ wire sel_fast = fast_boot && cpu_addr == 16'hff50 && boot_rom_enabled;
 				
 // http://gameboy.mongenel.com/dmg/asmmemmap.html
 wire [7:0] cpu_di = 
-		irq_ack?irq_vec:
+		(irq_ack||old_ack)?irq_vec:
 		sel_fast?8'h42:         // fast boot flag
 		sel_joy?joy_do:         // joystick register
 		sel_sb?sb_r:
@@ -99,7 +99,7 @@ wire [7:0] cpu_di =
 		sel_if?{3'b111, if_r}:  // interrupt flag register
 		8'hff;
 
-wire clk = ce_p;
+wire clk = clk_sys & ce_p;
 wire cpu_wr_n;
 wire cpu_rd_n;
 wire cpu_iorq_n;
@@ -218,7 +218,6 @@ wire [7:0] joy_do = { 2'b11, p54, joy_p4 & joy_p5 };
 // interrupt flags are set when the event happens or when the cpu writes
 // the register to 1. The "highest" one active is cleared when the cpu
 // runs an interrupt ack cycle or when it writes a 0 to the register
-
 wire irq_ack = !cpu_iorq_n && !cpu_m1_n;
 
 // irq vector
@@ -237,16 +236,19 @@ reg [3:0] inputD, inputD2;
 // irq is low when an enable irq is active
 wire irq_n = !(ie_r & if_r);
 
+
+reg old_ack;
+
 reg [4:0] if_r;
 reg [4:0] ie_r; // writing  $ffff sets the irq enable mask
-always @(negedge clk) begin //negedge to trigger interrupt earlier
-	reg old_ack = 0;
-	
+always @(posedge clk) begin //negedge to trigger interrupt earlier
+
 	if(reset) begin
 		ie_r <= 5'h00;
 		if_r <= 5'h00;
+		old_ack <= 1'b0;
 	end
-
+	
 	// rising edge on vs
 	vsD <= vs;
 	vsD2 <= vsD;
@@ -277,7 +279,7 @@ always @(negedge clk) begin //negedge to trigger interrupt earlier
 		else if(if_r[3] && ie_r[3]) if_r[3] <= 1'b0;
 		else if(if_r[4] && ie_r[4]) if_r[4] <= 1'b0;
 	end
-
+	
 	// cpu writes interrupt enable register
 	if(sel_ie && !cpu_wr_n)
 		ie_r <= cpu_do[4:0];
