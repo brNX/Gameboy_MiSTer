@@ -77,7 +77,7 @@ wire dma_sel_iram = (dma_addr[15:14] == 2'b11) && (dma_addr[15:8] != 8'hff); // 
 // the boot roms sees a special $42 flag in $ff50 if it's supposed to to a fast boot
 wire sel_fast = fast_boot && cpu_addr == 16'hff50 && boot_rom_enabled;
 
-wire sc_r = {sc_start,6'h3F,sc_shiftclock};
+wire [7:0] sc_r = {sc_start,6'h3F,sc_shiftclock};
 				
 // http://gameboy.mongenel.com/dmg/asmmemmap.html
 wire [7:0] cpu_di = 
@@ -168,7 +168,7 @@ always @(posedge clk) begin
 		sc_start <= cpu_do[7];
 		sc_shiftclock <= cpu_do[0];
 		if (cpu_do[7]) begin 						//enable transfer
-			serial_clk_div <= 9'h3FF;
+			serial_clk_div <= 9'h1FF;
 			serial_counter <= 4'd8;
 		end 
 	end else if (sc_start && sc_shiftclock) begin // serial transfer and serial clock enabled
@@ -181,7 +181,7 @@ always @(posedge clk) begin
 		if (!serial_counter) begin
 			serial_irq <= 1'b1; 	//trigger interrupt
 			sc_start <= 1'b0; 	//reset transfer state
-			serial_clk_div <= 9'h3FF;
+			serial_clk_div <= 9'h1FF;
 		   serial_counter <= 4'd8;
 		end	
 	
