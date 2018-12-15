@@ -754,11 +754,9 @@ begin
 			end if;
 			
 			if sq1_trigger = '1' or sq1_volchange = '1' then
-				sq1_vol <= sq1_svol;
 				if sq1_svol = "00000" and sq1_envsgn = '0' then -- dac disabled
 					sq1_playing <= '0';
 				end if;
-
 			end if;
 			
 			if sq1_lenchange = '1' then
@@ -768,7 +766,7 @@ begin
 
 			-- Check sample trigger and start playing
 			if sq1_trigger = '1' then
-				
+				sq1_vol <= sq1_svol;
 				sq1_fr2 <= sq1_freq;  -- shadow frequency register for sweep unit
 				sq1_sweep_en := sq1_swper /= "000" or sq1_swshift /= "000" ; -- sweep unit enabled ?
 				---- sweep quirks ---
@@ -883,7 +881,6 @@ begin
 			end if;
 			
 			if sq2_volchange ='1' or sq2_trigger= '1' then
-				sq2_vol <= sq2_svol;
 				if sq2_svol = "00000" and sq2_envsgn = '0' then -- dac disabled
 					sq2_playing <= '0';
 				end if;
@@ -895,6 +892,7 @@ begin
 
 			-- Check sample trigger and start playing
 			if sq2_trigger = '1' then
+			   sq2_vol <= sq2_svol;
 				
 				-- sq2_fr2 <= sq2_freq;
 				sq2_fcnt := unsigned(sq2_freq);
@@ -994,7 +992,6 @@ begin
 			end if;
 			
 			if noi_volchange ='1' or noi_trigger= '1' then
-				noi_vol <= noi_svol;
 				if noi_svol = "00000" and noi_envsgn = '0' then -- dac disabled
 					noi_playing <= '0';
 				end if;
@@ -1005,6 +1002,7 @@ begin
 			end if;
 			
 			if noi_trigger = '1' or noi_freqchange = '1' then
+				
 				-- Calculate noise frequency
 				case noi_div is 
 				when "000" => noi_period := to_unsigned(2, noi_period'length);
@@ -1025,6 +1023,7 @@ begin
 			
 			-- Check sample trigger and start playing
 			if noi_trigger = '1' then
+			   noi_vol <= noi_svol;
 				
 				noi_lfsr := (others => '1');
 				
