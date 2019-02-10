@@ -131,8 +131,37 @@ wire cpu_iorq_n;
 wire cpu_m1_n;
 wire cpu_mreq_n;
 
-wire cpu_clken = isGBC ? !hdma_rd:1'b1;  //when hdma is enabled stop CPU (GBC)
+wire master_enable;
+
+wire cpu_clken = master_enable?isGBC ? !hdma_rd:1'b1:1'b0;  //when hdma is enabled stop CPU (GBC)
+//wire cpu_clken = isGBC ? !hdma_rd:1'b1;  //when hdma is enabled stop CPU (GBC)
 wire cpu_stop;
+
+
+cpulyc u0 (
+	.probe  (),  //  probes.probe
+	.source (master_enable)  // sources.source
+);
+
+
+
+
+(* syn_preserve = 1 *) reg [63:0] clockcounter  /* synthesis keep = 1 */;
+
+always @ (posedge clk) begin
+	if (reset)
+		clockcounter <= 6;
+	else
+		clockcounter <= clockcounter + 1;
+end
+
+spram #(1,64) tempram (
+	.clock      ( clk_cpu        ),
+	.address    ( 0      ),
+	.wren       ( 1      ),
+	.data       ( clockcounter         ),
+	.q          (         )
+);
 	
 GBse cpu (
 	.RESET_n    ( !reset        ),
@@ -155,6 +184,29 @@ GBse cpu (
    .DO         ( cpu_do        ),
 	.STOP       ( cpu_stop      )
 );
+
+/*tv80s cpu (
+	.reset_n    ( !reset        ),
+	.clk        ( clk_cpu       ),
+	.cen        ( cpu_clken     ),
+	.wait_n     ( 1'b1          ),
+	.int_n      ( irq_n         ),
+	.nmi_n      ( 1'b1          ),
+	.busrq_n    ( 1'b1          ),
+   .m1_n       ( cpu_m1_n      ),
+   .mreq_n     ( cpu_mreq_n    ),
+   .iorq_n     ( cpu_iorq_n    ),
+   .rd_n       ( cpu_rd_n      ),
+   .wr_n       ( cpu_wr_n      ),
+   .rfsh_n     (               ),
+   .halt_n     (               ),
+   .busak_n    (               ),
+   .A          ( cpu_addr      ),
+   .di         ( cpu_di        ),
+   .dout       ( cpu_do        ),
+	.stop       ( cpu_stop      )
+);*/
+
 
 // --------------------------------------------------------------------
 // --------------------- Speed Toggle KEY1 (GBC)-----------------------
@@ -198,8 +250,8 @@ gbc_snd audio (
    .s1_readdata 	( audio_do        ),
 	.s1_writedata  ( cpu_do       	),
 
-   .snd_left 		( audio_l  			),
-	.snd_right  	( audio_r  			)
+   .snd_left 		( audio_l		),
+	.snd_right  	( audio_r		)
 );
 
 // --------------------------------------------------------------------
@@ -429,13 +481,13 @@ spram #(13) vram0 (
 );
 
 //separate 8k for vbank1 for gbc because of BG reads
-spram #(13) vram1 (
+/*spram #(13) vram1 (
 	.clock      ( clk_cpu               ),
 	.address    ( vram_addr             ),
 	.wren       ( vram1_wren            ),
 	.data       ( vram_di               ),
 	.q          ( vram1_do              )
-);
+);*/
 
 //GBC VRAM banking
 always @(posedge clk_cpu) begin
@@ -509,7 +561,7 @@ wire [14:0] iram_addr = (isGBC&&hdma_rd&&hdma_sel_iram)?               //hdma tr
 
 wire cpu_wr_iram = sel_iram && !cpu_wr_n;
 wire [7:0] iram_do;
-spram #(15) iram (
+spram #(13) iram (
 	.clock      ( clk_cpu        ),
 	.address    ( iram_addr      ),
 	.wren       ( iram_wren      ),

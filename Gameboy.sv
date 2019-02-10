@@ -604,13 +604,26 @@ always @(negedge clk_sys) begin
 	ce_cpu   <= !div[3:0];
 end
 
+(* syn_preserve = 1 *)  reg clockduty50; /* synthesis keep = 1 */
+always @(negedge ce_pix) begin
+	clockduty50 <= ~clockduty50;
+end
+
+spram #(1,1) tempram2 (
+	.clock      ( clk_sys        ),
+	.address    ( 0      ),
+	.wren       ( 1      ),
+	.data       ( clockduty50    ),
+	.q          (         )
+);
+
 
 ///////////////////////////// GBC BIOS /////////////////////////////////
 
 wire [7:0] bios_do;
 wire [11:0] bios_addr;
 
-dpram_dif #(12,8,11,16) boot_rom_gbc (
+/*dpram_dif #(12,8,11,16) boot_rom_gbc (
 	.clock (clk_sys),
 	
 	.address_a (bios_addr),
@@ -622,7 +635,7 @@ dpram_dif #(12,8,11,16) boot_rom_gbc (
 	.wren_b (ioctl_wr && bios_download),
 	.data_b (ioctl_dout),
 	.q_b ()
-);
+);*/
 
 
 /////////////////////////  BRAM SAVE/LOAD  /////////////////////////////
@@ -656,7 +669,7 @@ wire [16:0] cram_addr = mbc1? {2'b00,mbc1_ram_bank, cart_addr[12:0]}:
 
 // Up to 8kb * 16banks of Cart Ram (128kb)
 
-dpram #(16) cram_l (
+/*dpram #(16) cram_l (
 	.clock_a (clk_cpu2x),
 	.address_a (cram_addr[16:1]),
 	.wren_a (cram_wr & ~cram_addr[0]),
@@ -682,7 +695,7 @@ dpram #(16) cram_h (
 	.wren_b (bk_wr),
 	.data_b (bk_data[15:8]),
 	.q_b (bk_q[15:8])
-);
+);*/
 
 wire downloading = cart_download;
 

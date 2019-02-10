@@ -135,7 +135,7 @@ reg [7:0] scx;
 reg [7:0] scx_r;   // stable over line
 
 // ff44 line counter
-wire [7:0] ly = v_cnt;
+(*preserve=1*) wire [7:0] ly = v_cnt;
 
 // ff45 line counter compare
 wire lyc_match = (ly == lyc);
@@ -195,12 +195,13 @@ end
 // ------------------------------- IRQs -------------------------------
 // --------------------------------------------------------------------
 
+
 always @(posedge clk_reg) begin  //TODO: have to check if this is correct
 	irq <= 1'b0;
 	
 	//TODO: investigate and fix timing of lyc=ly
 	// lyc=ly coincidence
-	if(stat[6] && (h_cnt == 1) && lyc_match)
+	if(stat[6] && h_cnt == 2 && lyc_match)
 		irq <= 1'b1;
 		
 	// begin of oam phase
@@ -220,7 +221,7 @@ end
 // --------------------- CPU register interface -----------------------
 // --------------------------------------------------------------------
 integer ii=0;
-always @(posedge clk_reg) begin
+always @(negedge clk_reg) begin
 	if(reset) begin
 		lcdc <= 8'h00;  // screen must be off since dmg rom writes to vram
 		scy <= 8'h00;
@@ -565,7 +566,7 @@ wire win_start = lcdc_win_ena && (v_cnt >= wy_r) && de && (wx_r >= 7) && (pcnt =
 
 
 // each memory access takes two cycles
-always @(negedge clk or negedge lcdc_on) begin
+always @(negedge clk /*or negedge lcdc_on*/) begin
 
 	if (!lcdc_on) begin // don't increase counters if lcdoff 
 		//reset counters

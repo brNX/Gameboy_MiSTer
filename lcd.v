@@ -42,7 +42,7 @@ reg [14:0] vbuffer_lineptr;
 
 
 //image buffer 160x144x2bits for now , later 15bits for cgb
-dpram #(15,15) vbuffer (
+dpram #(15,2) vbuffer (
 	.clock_a (clk),
 	.address_a (vbuffer_inptr),
 	.wren_a (clkena),
