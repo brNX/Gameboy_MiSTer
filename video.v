@@ -94,7 +94,7 @@ sprites sprites (
 	.addr     ( sprite_addr  ),
 	.dvalid   ( sprite_dvalid),
 	.data     ( vram_data    ),
-	.data1    ( vram1_data   ),
+	.data1    ( isGBC?vram1_data:vram_data  ),
 	
 	//gbc
 	.pixel_cmap_gbc ( sprite_pixel_cmap_gbc ),
@@ -221,7 +221,7 @@ end
 // --------------------- CPU register interface -----------------------
 // --------------------------------------------------------------------
 integer ii=0;
-always @(negedge clk_reg) begin
+always @(posedge clk_reg) begin
 	if(reset) begin
 		lcdc <= 8'h00;  // screen must be off since dmg rom writes to vram
 		scy <= 8'h00;
@@ -570,7 +570,7 @@ always @(negedge clk /*or negedge lcdc_on*/) begin
 
 	if (!lcdc_on) begin // don't increase counters if lcdoff 
 		//reset counters
-		h_cnt <= 9'd0;  
+		h_cnt <= 9'd4;  
 		v_cnt <= 8'd0;
 		
 	end else begin

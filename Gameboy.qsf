@@ -449,21 +449,6 @@ set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to altera_reserved_lai_
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to altera_reserved_lai_0_15
 set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][0] -to "emu:emu|gb:gb|GBse:cpu|T80:u0|PC[0]" -section_id auto_lai_0
 set_instance_assignment -name CONNECT_PIN_FROM_SLD_NODE_ENTITY_PORT acq_clk_out -to altera_reserved_lai_0_0 -section_id auto_lai_0
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][1] -to "emu:emu|gb:gb|GBse:cpu|T80:u0|PC[0]" -section_id auto_lai_0
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][2] -to "emu:emu|gb:gb|GBse:cpu|T80:u0|PC[1]" -section_id auto_lai_0
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][3] -to "emu:emu|gb:gb|GBse:cpu|T80:u0|PC[2]" -section_id auto_lai_0
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][4] -to "emu:emu|gb:gb|GBse:cpu|T80:u0|PC[3]" -section_id auto_lai_0
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][5] -to "emu:emu|gb:gb|GBse:cpu|T80:u0|PC[4]" -section_id auto_lai_0
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][6] -to "emu:emu|gb:gb|GBse:cpu|T80:u0|PC[5]" -section_id auto_lai_0
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][7] -to "emu:emu|gb:gb|GBse:cpu|T80:u0|PC[6]" -section_id auto_lai_0
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][8] -to "emu:emu|gb:gb|GBse:cpu|T80:u0|IR[7]" -section_id auto_lai_0
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][9] -to "emu:emu|gb:gb|GBse:cpu|T80:u0|IR[6]" -section_id auto_lai_0
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][10] -to "emu:emu|gb:gb|GBse:cpu|T80:u0|IR[5]" -section_id auto_lai_0
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][11] -to "emu:emu|gb:gb|GBse:cpu|T80:u0|IR[4]" -section_id auto_lai_0
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][12] -to "emu:emu|gb:gb|GBse:cpu|T80:u0|IR[3]" -section_id auto_lai_0
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][13] -to "emu:emu|gb:gb|GBse:cpu|T80:u0|IR[2]" -section_id auto_lai_0
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][14] -to "emu:emu|gb:gb|GBse:cpu|T80:u0|IR[1]" -section_id auto_lai_0
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][15] -to "emu:emu|gb:gb|GBse:cpu|T80:u0|IR[0]" -section_id auto_lai_0
 set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ACQ_MODE=1" -section_id auto_lai_0
 set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[0] -to "emu:emu|ce_cpu" -section_id auto_signaltap_0
 set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[0] -to "emu:emu|ce_cpu" -section_id auto_signaltap_0
@@ -479,7 +464,6 @@ set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualif
 set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[23] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
 set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[8] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
 set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_clk -to "emu:emu|clockduty50" -section_id auto_lai_0
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_NODE_CRC=26732" -section_id auto_lai_0
 set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[2] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
 set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[9] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
 set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[10] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
@@ -1003,5 +987,18 @@ set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[28] -
 set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[29] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
 set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[30] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
 set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_SAMPLE_DEPTH=16384" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][1] -to "emu:emu|gb:gb|reset" -section_id auto_lai_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][8] -to "emu:emu|gb:gb|GBse:cpu|T80:u0|IR[0]" -section_id auto_lai_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][9] -to "emu:emu|gb:gb|GBse:cpu|T80:u0|IR[1]" -section_id auto_lai_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][10] -to "emu:emu|gb:gb|GBse:cpu|T80:u0|IR[2]" -section_id auto_lai_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][11] -to "emu:emu|gb:gb|GBse:cpu|T80:u0|IR[3]" -section_id auto_lai_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][12] -to "emu:emu|gb:gb|GBse:cpu|T80:u0|IR[4]" -section_id auto_lai_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][13] -to "emu:emu|gb:gb|GBse:cpu|T80:u0|IR[5]" -section_id auto_lai_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][14] -to "emu:emu|gb:gb|GBse:cpu|T80:u0|IR[6]" -section_id auto_lai_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][15] -to "emu:emu|gb:gb|GBse:cpu|T80:u0|IR[7]" -section_id auto_lai_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][3] -to "emu:emu|gb:gb|boot_rom_enabled" -section_id auto_lai_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][5] -to "emu:emu|gb:gb|video:video|mode[1]" -section_id auto_lai_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][6] -to "emu:emu|gb:gb|video:video|mode[0]" -section_id auto_lai_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_NODE_CRC=24666" -section_id auto_lai_0
 set_global_assignment -name SLD_FILE "db/stp1-video_auto_stripped.stp"
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

@@ -1,8 +1,8 @@
 <session jtag_chain="DE-SoC [USB-1]" jtag_device="@2: 5CSEBA6(.|ES)/5CSEMA6/.. (0x02D020DD)" sof_file="C:/Users/bgouveia/Desktop/misterfpga/Gameboy_MiSTer/output_files/Gameboy.sof">
-  <display_attributes active_instance="0" active_tab="0"/>
+  <display_attributes active_instance="0" active_tab="2"/>
   <instance compilation_mode="normal" entity_name="sld_multitap" is_auto_node="true" name="auto_lai_0" type="generic">
     <node_ip_info instance_id="0" mfg_id="110" node_id="7" version="0"/>
-    <core_parameters bank_count="1" capture_mode="state" clock="emu:emu|clockduty50" crc_value="686C" enable_auto_setup="false" enable_plug_run="false" max_freq="100" pin_count="16" power_up_state="tristate" tdm_rate="1"/>
+    <core_parameters bank_count="1" capture_mode="state" clock="emu:emu|clockduty50" crc_value="605A" enable_auto_setup="false" enable_plug_run="false" max_freq="100" pin_count="16" power_up_state="tristate" tdm_rate="1"/>
     <pins>
       <pin io_standard="2.5 V" location="PIN_AG28" name="altera_reserved_lai_0_0"/>
       <pin io_standard="2.5 V" location="PIN_AE25" name="altera_reserved_lai_0_1"/>
@@ -24,24 +24,24 @@
     <banks>
       <bank name="Bank 0">
         <signal name="emu:emu|gb:gb|GBse:cpu|T80:u0|PC[0]" type="unused"/>
-        <signal name="emu:emu|gb:gb|GBse:cpu|T80:u0|PC[0]" type="reg"/>
-        <signal name="emu:emu|gb:gb|GBse:cpu|T80:u0|PC[1]" type="reg"/>
-        <signal name="emu:emu|gb:gb|GBse:cpu|T80:u0|PC[2]" type="reg"/>
-        <signal name="emu:emu|gb:gb|GBse:cpu|T80:u0|PC[3]" type="reg"/>
-        <signal name="emu:emu|gb:gb|GBse:cpu|T80:u0|PC[4]" type="reg"/>
-        <signal name="emu:emu|gb:gb|GBse:cpu|T80:u0|PC[5]" type="reg"/>
-        <signal name="emu:emu|gb:gb|GBse:cpu|T80:u0|PC[6]" type="reg"/>
-        <signal name="emu:emu|gb:gb|GBse:cpu|T80:u0|IR[7]" type="reg"/>
-        <signal name="emu:emu|gb:gb|GBse:cpu|T80:u0|IR[6]" type="reg"/>
-        <signal name="emu:emu|gb:gb|GBse:cpu|T80:u0|IR[5]" type="reg"/>
-        <signal name="emu:emu|gb:gb|GBse:cpu|T80:u0|IR[4]" type="reg"/>
-        <signal name="emu:emu|gb:gb|GBse:cpu|T80:u0|IR[3]" type="reg"/>
-        <signal name="emu:emu|gb:gb|GBse:cpu|T80:u0|IR[2]" type="reg"/>
-        <signal name="emu:emu|gb:gb|GBse:cpu|T80:u0|IR[1]" type="reg"/>
+        <signal name="emu:emu|gb:gb|reset" type="comb"/>
+        <signal name="" type="unused"/>
+        <signal name="emu:emu|gb:gb|boot_rom_enabled" type="reg"/>
+        <signal name="" type="unused"/>
+        <signal name="emu:emu|gb:gb|video:video|mode[1]" type="comb"/>
+        <signal name="emu:emu|gb:gb|video:video|mode[0]" type="comb"/>
+        <signal name="" type="unused"/>
         <signal name="emu:emu|gb:gb|GBse:cpu|T80:u0|IR[0]" type="reg"/>
+        <signal name="emu:emu|gb:gb|GBse:cpu|T80:u0|IR[1]" type="reg"/>
+        <signal name="emu:emu|gb:gb|GBse:cpu|T80:u0|IR[2]" type="reg"/>
+        <signal name="emu:emu|gb:gb|GBse:cpu|T80:u0|IR[3]" type="reg"/>
+        <signal name="emu:emu|gb:gb|GBse:cpu|T80:u0|IR[4]" type="reg"/>
+        <signal name="emu:emu|gb:gb|GBse:cpu|T80:u0|IR[5]" type="reg"/>
+        <signal name="emu:emu|gb:gb|GBse:cpu|T80:u0|IR[6]" type="reg"/>
+        <signal name="emu:emu|gb:gb|GBse:cpu|T80:u0|IR[7]" type="reg"/>
       </bank>
     </banks>
-    <display_attributes connected_bank="-1"/>
+    <display_attributes connected_bank="0"/>
     <alias_list/>
   </instance>
 </session>
