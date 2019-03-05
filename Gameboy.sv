@@ -552,8 +552,8 @@ wire [7:0] video_r, video_g, video_b;
 wire video_hs, video_vs, video_bl;
 
 lcd lcd (
-	 .pclk   ( clk_sys_old),
-	 .pce    ( ce_pix     ),
+	 .pclk   ( clk_sys),
+	 .pce    ( double     ),
 	 .clk    ( clk_cpu    ),
 	 .isGBC  ( isGBC      ),
 
@@ -586,7 +586,7 @@ assign VGA_G  = video_g;
 assign VGA_B  = video_b;
 assign VGA_DE = ~video_bl;
 assign CLK_VIDEO = clk_sys;
-assign CE_PIXEL = ce_pix & !line_cnt;
+assign CE_PIXEL = double & !line_cnt;
 assign VGA_HS = video_hs;
 assign VGA_VS = video_vs;
 
@@ -595,18 +595,21 @@ wire ce_cpu2x = ce_pix;
 wire clk_cpu = clk_sys & ce_cpu;
 wire clk_cpu2x = clk_sys & ce_pix;
 
-reg ce_pix, ce_cpu,ce_sys;
+wire current_ce = speed?double:ce_pix;
+
+reg ce_pix, ce_cpu,ce_sys,double;
 always @(negedge clk_sys) begin
 	reg [3:0] div = 0;
 
 	div <= div + 1'd1;
 	ce_sys   <= !div[0];
+	double	<= !div[1:0];
 	ce_pix   <= !div[2:0];
 	ce_cpu   <= !div[3:0];
 end
 
 (* syn_preserve = 1 *)  reg clockduty50; /* synthesis keep = 1 */
-always @(negedge ce_pix) begin
+always @(negedge current_ce) begin
 	clockduty50 <= ~clockduty50;
 end
 
@@ -770,7 +773,7 @@ always @(posedge clk_sys) begin
 end
 
 reg [1:0] line_cnt;
-always @(posedge clk_sys_old) begin
+always @(posedge clk_sys) begin
 	reg old_hs;
 	reg old_vs;
 
