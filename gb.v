@@ -133,6 +133,23 @@ wire cpu_mreq_n;
 
 wire cpu_clken = isGBC ? !hdma_rd:1'b1;  //when hdma is enabled stop CPU (GBC)
 wire cpu_stop;
+
+(* syn_preserve = 1 *) reg [63:0] clockcounter  /* synthesis keep = 1 */;
+
+always @ (posedge clk_cpu) begin
+	if (reset)
+		clockcounter <= 6;
+	else
+		clockcounter <= clockcounter + 1;
+end
+
+spram #(1,64) tempram (
+	.clock      ( clk_cpu        ),
+	.address    ( 0      ),
+	.wren       ( 1      ),
+	.data       ( clockcounter         ),
+	.q          (         )
+);
 	
 GBse cpu (
 	.RESET_n    ( !reset        ),

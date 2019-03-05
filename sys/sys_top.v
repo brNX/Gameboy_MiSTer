@@ -27,12 +27,12 @@ module sys_top
 	input         FPGA_CLK3_50,
 
 	//////////// VGA ///////////
-	output  [5:0] VGA_R,
+	/*output  [5:0] VGA_R,
 	output  [5:0] VGA_G,
 	output  [5:0] VGA_B,
 	inout         VGA_HS,  // VGA_HS is secondary SD card detect when VGA_EN = 1 (inactive)
 	output		  VGA_VS,
-	input         VGA_EN,  // active low
+	input         VGA_EN,  // active low*/
 
 	/////////// AUDIO //////////
 	output		  AUDIO_L,
@@ -70,18 +70,18 @@ module sys_top
 	output        SDRAM_CKE,
 
 	//////////// I/O ///////////
-	output        LED_USER,
+	/*output        LED_USER,
 	output        LED_HDD,
-	output        LED_POWER,
+	output        LED_POWER,*/
 	input         BTN_USER,
 	input         BTN_OSD,
 	input         BTN_RESET,
 
 	//////////// SDIO ///////////
-	inout   [3:0] SDIO_DAT,
+	/*inout   [3:0] SDIO_DAT,
 	inout         SDIO_CMD,
 	output        SDIO_CLK,
-	input         SDIO_CD,
+	input         SDIO_CD,*/
 
 	////////// MB KEY ///////////
 	input   [1:0] KEY,
@@ -94,7 +94,7 @@ module sys_top
 );
 
 
-assign SDIO_DAT[2:1] = 2'bZZ;
+//assign SDIO_DAT[2:1] = 2'bZZ;
 
 
 //////////////////////////  LEDs  ///////////////////////////////////////
@@ -107,9 +107,9 @@ wire led_d =  led_disk[1]  ? ~led_disk[0]  : ~(led_disk[0] | gp_out[29]);
 wire led_u = ~led_user;
 wire led_locked;
 
-assign LED_POWER = led_p ? 1'bZ : 1'b0;
+/*assign LED_POWER = led_p ? 1'bZ : 1'b0;
 assign LED_HDD   = led_d ? 1'bZ : 1'b0;
-assign LED_USER  = led_u ? 1'bZ : 1'b0;
+assign LED_USER  = led_u ? 1'bZ : 1'b0;*/
 
 //LEDs on main board
 assign LED = (led_overtake & led_state) | (~led_overtake & {1'b0,led_locked,1'b0, ~led_p, 1'b0, ~led_d, 1'b0, ~led_u});
@@ -806,11 +806,11 @@ vga_out vga_out
 wire vs1 = vga_scaler ? HDMI_TX_VS : vs;
 wire hs1 = vga_scaler ? HDMI_TX_HS : hs;
 
-assign VGA_VS = VGA_EN ? 1'bZ      : csync ?     1'b1     : ~vs1;
+/*assign VGA_VS = VGA_EN ? 1'bZ      : csync ?     1'b1     : ~vs1;
 assign VGA_HS = VGA_EN ? 1'bZ      : csync ? ~(vs1 ^ hs1) : ~hs1;
 assign VGA_R  = VGA_EN ? 6'bZZZZZZ : vga_o[23:18];
 assign VGA_G  = VGA_EN ? 6'bZZZZZZ : vga_o[15:10];
-assign VGA_B  = VGA_EN ? 6'bZZZZZZ : vga_o[7:2];
+assign VGA_B  = VGA_EN ? 6'bZZZZZZ : vga_o[7:2];*/
 
 
 /////////////////////////  Audio output  ////////////////////////////////
@@ -996,11 +996,11 @@ emu emu
 	.AUDIO_MIX(audio_mix),
 	.TAPE_IN(0),
 
-	.SD_SCK(SDIO_CLK),
+/*	.SD_SCK(SDIO_CLK),
 	.SD_MOSI(SDIO_CMD),
 	.SD_MISO(SDIO_DAT[0]),
 	.SD_CS(SDIO_DAT[3]),
-	.SD_CD(VGA_EN ? VGA_HS : SDIO_CD),
+	.SD_CD(VGA_EN ? VGA_HS : SDIO_CD),*/
 
 	.DDRAM_CLK(ram_clk),
 	.DDRAM_ADDR(ram_address),

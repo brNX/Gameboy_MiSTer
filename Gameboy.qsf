@@ -29,7 +29,7 @@ set_global_assignment -name FAMILY "Cyclone V"
 set_global_assignment -name DEVICE 5CSEBA6U23I7
 set_global_assignment -name TOP_LEVEL_ENTITY sys_top
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION 16.1.2
-set_global_assignment -name LAST_QUARTUS_VERSION "17.0.2 Standard Edition"
+set_global_assignment -name LAST_QUARTUS_VERSION "18.0.0 Lite Edition"
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "01:53:30  APRIL 20, 2017"
 set_global_assignment -name DEVICE_FILTER_PACKAGE UFBGA
 set_global_assignment -name DEVICE_FILTER_PIN_COUNT 672
@@ -47,7 +47,7 @@ set_global_assignment -name MIN_CORE_JUNCTION_TEMP "-40"
 set_global_assignment -name MAX_CORE_JUNCTION_TEMP 100
 set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
 set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
-set_global_assignment -name TIMEQUEST_MULTICORNER_ANALYSIS OFF
+set_global_assignment -name TIMING_ANALYZER_MULTICORNER_ANALYSIS OFF
 set_global_assignment -name OPTIMIZE_POWER_DURING_FITTING OFF
 set_global_assignment -name FINAL_PLACEMENT_OPTIMIZATION ALWAYS
 set_global_assignment -name SYNTH_GATED_CLOCK_CONVERSION ON
@@ -100,49 +100,14 @@ set_location_assignment PIN_AG11 -to ARDUINO_IO[15]
 #============================================================
 # SDIO
 #============================================================
-set_location_assignment PIN_AF25 -to SDIO_DAT[0]
-set_location_assignment PIN_AF23 -to SDIO_DAT[1]
-set_location_assignment PIN_AD26 -to SDIO_DAT[2]
-set_location_assignment PIN_AF28 -to SDIO_DAT[3]
-set_location_assignment PIN_AF27 -to SDIO_CMD
-set_location_assignment PIN_AH26 -to SDIO_CLK
-set_location_assignment PIN_AH7 -to SDIO_CD
 
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to SDIO_*
 
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to SDIO_*
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to SDIO_DAT[*]
-set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to SDIO_CMD
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to SDIO_CD
 
 #============================================================
 # VGA
 #============================================================
-set_location_assignment PIN_AE17 -to VGA_R[0]
-set_location_assignment PIN_AE20 -to VGA_R[1]
-set_location_assignment PIN_AF20 -to VGA_R[2]
-set_location_assignment PIN_AH18 -to VGA_R[3]
-set_location_assignment PIN_AH19 -to VGA_R[4]
-set_location_assignment PIN_AF21 -to VGA_R[5]
-
-set_location_assignment PIN_AE19 -to VGA_G[0]
-set_location_assignment PIN_AG15 -to VGA_G[1]
-set_location_assignment PIN_AF18 -to VGA_G[2]
-set_location_assignment PIN_AG18 -to VGA_G[3]
-set_location_assignment PIN_AG19 -to VGA_G[4]
-set_location_assignment PIN_AG20 -to VGA_G[5]
-
-set_location_assignment PIN_AG21 -to VGA_B[0]
-set_location_assignment PIN_AA20 -to VGA_B[1]
-set_location_assignment PIN_AE22 -to VGA_B[2]
-set_location_assignment PIN_AF22 -to VGA_B[3]
-set_location_assignment PIN_AH23 -to VGA_B[4]
-set_location_assignment PIN_AH21 -to VGA_B[5]
-
-set_location_assignment PIN_AH22 -to VGA_HS
-set_location_assignment PIN_AG24 -to VGA_VS
-
-set_location_assignment PIN_AH27 -to VGA_EN
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to VGA_EN
 
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to VGA_*
@@ -152,8 +117,6 @@ set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to VGA_*
 # AUDIO
 #============================================================
 set_location_assignment PIN_AC24 -to AUDIO_L
-set_location_assignment PIN_AE25 -to AUDIO_R
-set_location_assignment PIN_AG26 -to AUDIO_SPDIF
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to AUDIO_*
 set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to AUDIO_*
 
@@ -216,13 +179,8 @@ set_instance_assignment -name ALLOW_SYNCH_CTRL_USAGE OFF -to *|SDRAM_*
 #============================================================
 # I/O
 #============================================================
-set_location_assignment PIN_Y15 -to LED_USER
 set_location_assignment PIN_AA15 -to LED_HDD
 set_location_assignment PIN_AG28 -to LED_POWER
-
-set_location_assignment PIN_AH24 -to BTN_USER
-set_location_assignment PIN_AG25 -to BTN_OSD
-set_location_assignment PIN_AG23 -to BTN_RESET
 
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to LED_*
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to BTN_*
@@ -318,7 +276,7 @@ set_location_assignment PIN_V13 -to HDMI_TX_VS
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to KEY[0]
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to KEY[1]
 set_location_assignment PIN_AH17 -to KEY[0]
-set_location_assignment PIN_AH16 -to KEY[1]
+set_location_assignment IOBANK_4A -to KEY[1]
 
 #============================================================
 # LED
@@ -371,4 +329,78 @@ set_global_assignment -name VHDL_FILE gbc_snd.vhd
 set_global_assignment -name VERILOG_FILE gb.v
 set_global_assignment -name VERILOG_FILE hdma.v
 set_global_assignment -name SYSTEMVERILOG_FILE Gameboy.sv
+set_global_assignment -name USE_LOGIC_ANALYZER_INTERFACE_FILE "C:/Users/bgouveia/Desktop/misterfpga/Gameboy_MiSTer/lai1.lai"
+set_global_assignment -name ENABLE_LOGIC_ANALYZER_INTERFACE ON
+set_global_assignment -name SLD_NODE_CREATOR_ID 3698176 -section_id auto_lai_0
+set_global_assignment -name SLD_NODE_ENTITY_NAME sld_multitap -section_id auto_lai_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_clk -to "emu:emu|clockduty50" -section_id auto_lai_0
+set_instance_assignment -name CONNECT_PIN_FROM_SLD_NODE_ENTITY_PORT acq_clk_out -to altera_reserved_lai_0_0 -section_id auto_lai_0
+set_instance_assignment -name CONNECT_PIN_FROM_SLD_NODE_ENTITY_PORT acq_output[1] -to altera_reserved_lai_0_1 -section_id auto_lai_0
+set_instance_assignment -name CONNECT_PIN_FROM_SLD_NODE_ENTITY_PORT acq_output[2] -to altera_reserved_lai_0_2 -section_id auto_lai_0
+set_instance_assignment -name CONNECT_PIN_FROM_SLD_NODE_ENTITY_PORT acq_output[3] -to altera_reserved_lai_0_3 -section_id auto_lai_0
+set_instance_assignment -name CONNECT_PIN_FROM_SLD_NODE_ENTITY_PORT acq_output[4] -to altera_reserved_lai_0_4 -section_id auto_lai_0
+set_instance_assignment -name CONNECT_PIN_FROM_SLD_NODE_ENTITY_PORT acq_output[5] -to altera_reserved_lai_0_5 -section_id auto_lai_0
+set_instance_assignment -name CONNECT_PIN_FROM_SLD_NODE_ENTITY_PORT acq_output[6] -to altera_reserved_lai_0_6 -section_id auto_lai_0
+set_instance_assignment -name CONNECT_PIN_FROM_SLD_NODE_ENTITY_PORT acq_output[7] -to altera_reserved_lai_0_7 -section_id auto_lai_0
+set_instance_assignment -name CONNECT_PIN_FROM_SLD_NODE_ENTITY_PORT acq_output[8] -to altera_reserved_lai_0_8 -section_id auto_lai_0
+set_instance_assignment -name CONNECT_PIN_FROM_SLD_NODE_ENTITY_PORT acq_output[9] -to altera_reserved_lai_0_9 -section_id auto_lai_0
+set_instance_assignment -name CONNECT_PIN_FROM_SLD_NODE_ENTITY_PORT acq_output[10] -to altera_reserved_lai_0_10 -section_id auto_lai_0
+set_instance_assignment -name CONNECT_PIN_FROM_SLD_NODE_ENTITY_PORT acq_output[11] -to altera_reserved_lai_0_11 -section_id auto_lai_0
+set_instance_assignment -name CONNECT_PIN_FROM_SLD_NODE_ENTITY_PORT acq_output[12] -to altera_reserved_lai_0_12 -section_id auto_lai_0
+set_instance_assignment -name CONNECT_PIN_FROM_SLD_NODE_ENTITY_PORT acq_output[13] -to altera_reserved_lai_0_13 -section_id auto_lai_0
+set_instance_assignment -name CONNECT_PIN_FROM_SLD_NODE_ENTITY_PORT acq_output[14] -to altera_reserved_lai_0_14 -section_id auto_lai_0
+set_instance_assignment -name CONNECT_PIN_FROM_SLD_NODE_ENTITY_PORT acq_output[15] -to altera_reserved_lai_0_15 -section_id auto_lai_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][0] -to "emu:emu|gb:gb|GBse:cpu|T80:u0|PC[0]" -section_id auto_lai_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][1] -to "emu:emu|gb:gb|reset" -section_id auto_lai_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][3] -to "emu:emu|gb:gb|boot_rom_enabled" -section_id auto_lai_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][5] -to "emu:emu|gb:gb|video:video|mode[1]" -section_id auto_lai_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][6] -to "emu:emu|gb:gb|video:video|mode[0]" -section_id auto_lai_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][8] -to "emu:emu|gb:gb|GBse:cpu|T80:u0|IR[0]" -section_id auto_lai_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][9] -to "emu:emu|gb:gb|GBse:cpu|T80:u0|IR[1]" -section_id auto_lai_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][10] -to "emu:emu|gb:gb|GBse:cpu|T80:u0|IR[2]" -section_id auto_lai_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][11] -to "emu:emu|gb:gb|GBse:cpu|T80:u0|IR[3]" -section_id auto_lai_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][12] -to "emu:emu|gb:gb|GBse:cpu|T80:u0|IR[4]" -section_id auto_lai_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][13] -to "emu:emu|gb:gb|GBse:cpu|T80:u0|IR[5]" -section_id auto_lai_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][14] -to "emu:emu|gb:gb|GBse:cpu|T80:u0|IR[6]" -section_id auto_lai_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_input[0][15] -to "emu:emu|gb:gb|GBse:cpu|T80:u0|IR[7]" -section_id auto_lai_0
+set_location_assignment PIN_AG28 -to altera_reserved_lai_0_0
+set_location_assignment PIN_AE25 -to altera_reserved_lai_0_1
+set_location_assignment PIN_AG26 -to altera_reserved_lai_0_2
+set_location_assignment PIN_AG25 -to altera_reserved_lai_0_3
+set_location_assignment PIN_AH24 -to altera_reserved_lai_0_4
+set_location_assignment PIN_AG23 -to altera_reserved_lai_0_5
+set_location_assignment PIN_AG24 -to altera_reserved_lai_0_6
+set_location_assignment PIN_AH21 -to altera_reserved_lai_0_7
+set_location_assignment PIN_AH23 -to altera_reserved_lai_0_8
+set_location_assignment PIN_AF22 -to altera_reserved_lai_0_9
+set_location_assignment PIN_AG20 -to altera_reserved_lai_0_10
+set_location_assignment PIN_AG19 -to altera_reserved_lai_0_11
+set_location_assignment PIN_AG18 -to altera_reserved_lai_0_12
+set_location_assignment PIN_AF18 -to altera_reserved_lai_0_13
+set_location_assignment PIN_AG15 -to altera_reserved_lai_0_14
+set_location_assignment PIN_AE19 -to altera_reserved_lai_0_15
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_NODE_INFO=3698176" -section_id auto_lai_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_NODE_CRC=24666" -section_id auto_lai_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_BANK_WIDTH=16" -section_id auto_lai_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_BANK_SIZE=1" -section_id auto_lai_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_BANK_SEL_WIDTH=1" -section_id auto_lai_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_POWER_UP_STATE=0" -section_id auto_lai_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ACQ_MODE=1" -section_id auto_lai_0
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to altera_reserved_lai_0_0
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to LED_POWER
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to altera_reserved_lai_0_1
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to altera_reserved_lai_0_2
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to altera_reserved_lai_0_3
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to altera_reserved_lai_0_4
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to altera_reserved_lai_0_5
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to altera_reserved_lai_0_6
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to altera_reserved_lai_0_7
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to altera_reserved_lai_0_8
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to altera_reserved_lai_0_9
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to altera_reserved_lai_0_10
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to altera_reserved_lai_0_11
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to altera_reserved_lai_0_12
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to altera_reserved_lai_0_13
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to altera_reserved_lai_0_14
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to altera_reserved_lai_0_15
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

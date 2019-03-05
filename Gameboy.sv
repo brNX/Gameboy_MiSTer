@@ -605,6 +605,19 @@ always @(negedge clk_sys) begin
 	ce_cpu   <= !div[3:0];
 end
 
+(* syn_preserve = 1 *)  reg clockduty50; /* synthesis keep = 1 */
+always @(negedge ce_pix) begin
+	clockduty50 <= ~clockduty50;
+end
+
+spram #(1,1) tempram2 (
+	.clock      ( clk_sys        ),
+	.address    ( 0      ),
+	.wren       ( 1      ),
+	.data       ( clockduty50    ),
+	.q          (         )
+);
+
 
 ///////////////////////////// GBC BIOS /////////////////////////////////
 
