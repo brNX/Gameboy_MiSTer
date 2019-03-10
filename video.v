@@ -213,7 +213,7 @@ always @(posedge clk_reg) begin
 		irq <= 1'b1;
 
 	// begin of vblank
-	if((h_cnt == 455) && (v_cnt == 143)) begin
+	if((h_cnt == 3) && (v_cnt == 144)) begin
 		if (stat[4])
 			irq <= 1'b1;
 		vblank_irq <= 1'b1;
