@@ -8,7 +8,12 @@
 
 #include <stdio.h>
 #include <SDL.h>
+#include <SDL_gpu.h>
 #include <GL/gl3w.h>    // Initialize with gl3wInit()
+
+void drawTexture(){
+
+}
 
 int main(int argc, char **argv) {
 	
@@ -45,6 +50,7 @@ int main(int argc, char **argv) {
     SDL_GLContext gl_context = SDL_GL_CreateContext(window);
     SDL_GL_SetSwapInterval(1); // Enable vsync
 
+
     // Initialize OpenGL loader
     bool err = gl3wInit() != 0;
     if (err)
@@ -52,6 +58,10 @@ int main(int argc, char **argv) {
         fprintf(stderr, "Failed to initialize OpenGL loader!\n");
         return 1;
     }
+
+    printf("OpenGL %s, GLSL %s\n", glGetString(GL_VERSION), glGetString(GL_SHADING_LANGUAGE_VERSION));
+    
+    GPU_Image* image = GPU_LoadImage("face.png");
 
     int i;
     int clk;
@@ -101,6 +111,7 @@ int main(int argc, char **argv) {
 
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
+ 
     // Main loop
     bool done = false;
     while (!done)
@@ -142,6 +153,28 @@ int main(int argc, char **argv) {
                 counter++;
             ImGui::SameLine();
             ImGui::Text("counter = %d", counter);
+
+
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            ImGui::End();
+        }
+
+        {
+            static float f = 0.0f;
+            static int counter = 0;
+
+            ImGui::Begin("Hello, world2!");                          // Create a window called "Hello, world!" and append into it.
+
+            ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+
+            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+            ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+
+            if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+                counter++;
+            ImGui::SameLine();
+            ImGui::Text("counter = %d", counter);
+
 
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
             ImGui::End();
