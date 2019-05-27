@@ -10,7 +10,6 @@
 #include "imgui_sdl.h"
 
 
-
 int main(int argc, char **argv) {
 	
     // Setup SDL
@@ -64,6 +63,10 @@ int main(int argc, char **argv) {
     SDL_RenderClear(renderer);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderDrawPoint(renderer,51,50);
+    SDL_RenderDrawPoint(renderer,50,51);
+    SDL_RenderDrawPoint(renderer,51,51);
+    SDL_RenderDrawPoint(renderer,50,50);
+    SDL_RenderDrawPoint(renderer,49,50);
     SDL_RenderDrawPoint(renderer,50,51);
     SDL_RenderDrawPoint(renderer,51,51);
     SDL_RenderDrawPoint(renderer,50,50);
