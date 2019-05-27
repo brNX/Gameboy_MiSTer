@@ -129,36 +129,36 @@ wire lcdc_bg_tile_map_sel = lcdc[3];
 wire lcdc_spr_siz = lcdc[2];
 wire lcdc_spr_ena = lcdc[1];
 wire lcdc_bg_ena = lcdc[0];
-reg [7:0] lcdc;
+reg [7:0] lcdc /*verilator public*/;
 
 /* verilator lint_off UNUSED */
 // ff41 STAT
-reg [7:0] stat;
+reg [7:0] stat /*verilator public*/;
 /* verilator lint_on UNUSED */
 
 // ff42, ff43 background scroll registers
-reg [7:0] scy;
-reg [7:0] scy_r;   // stable over line
-reg [7:0] scx;
-reg [7:0] scx_r;   // stable over line
+reg [7:0] scy /*verilator public*/;
+reg [7:0] scy_r /*verilator public*/;   // stable over line
+reg [7:0] scx /*verilator public*/;
+reg [7:0] scx_r /*verilator public*/;   // stable over line
 
 // ff44 line counter
-wire [7:0] ly = v_cnt;
+wire [7:0] ly /*verilator public*/ = v_cnt;
 
 // ff45 line counter compare
-wire lyc_match = (ly == lyc);
-reg [7:0] lyc;
+wire lyc_match /*verilator public*/ = (ly == lyc);
+reg [7:0] lyc /*verilator public*/;
 reg lyc_changed=0;
 
-reg [7:0] bgp;
-reg [7:0] obp0;
-reg [7:0] obp1;
+reg [7:0] bgp  /*verilator public*/;
+reg [7:0] obp0 /*verilator public*/;
+reg [7:0] obp1 /*verilator public*/;
 
-reg [7:0] wy;
-reg [7:0] wy_r;   // stable over line
+reg [7:0] wy   /*verilator public*/;
+reg [7:0] wy_r /*verilator public*/;   // stable over line
 
-reg [7:0] wx;
-reg [7:0] wx_r;   // stable over line
+reg [7:0] wx   /*verilator public*/;
+reg [7:0] wx_r /*verilator public*/;   // stable over line
 
 
 //ff68-ff6A GBC
@@ -167,14 +167,14 @@ reg [5:0] bgpi; //Bit 0-5   Index (00-3F)
 reg bgpi_ai;    //Bit 7     Auto Increment  (0=Disabled, 1=Increment after Writing)
 
 //FF69 - BCPD/BGPD - Background Palette Data
-reg[7:0] bgpd [63:0]; //64 bytes
+reg[7:0] bgpd [63:0]/*verilator public*/; //64 bytes
 
 //FF6A - OCPS/OBPI - Sprite Palette Index
 reg [5:0] obpi; //Bit 0-5   Index (00-3F)
 reg obpi_ai;    //Bit 7     Auto Increment  (0=Disabled, 1=Increment after Writing)
 
 //FF6B - OCPD/OBPD - Sprite Palette Data
-reg[7:0] obpd [63:0]; //64 bytes
+reg[7:0] obpd [63:0]/*verilator public*/; //64 bytes
 
 // --------------------------------------------------------------------
 // ----------------------------- DMA engine ---------------------------

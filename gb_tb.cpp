@@ -1,13 +1,16 @@
 #include "Vgb.h"
 #include "Vgb_gb.h"
+#include "Vgb_video.h"
 #include "verilated.h"
 #include "verilated_vcd_c.h"
 
-    
+#include <stdint.h>   
 #include "SDL.h"
 
 #include "imgui.h"
 #include "imgui_sdl.h"
+
+#include "gb-draw-utils.h"
 
 
 Uint32 timerTick(Uint32 interval, void *param)
@@ -30,6 +33,127 @@ Uint32 timerTick(Uint32 interval, void *param)
     SDL_PushEvent(&event);
     return(interval);
 }
+
+
+void drawBackground(SDL_Texture* background, SDL_Renderer* renderer, Vgb* top) {
+
+    SDL_SetRenderTarget(renderer, background);
+    {
+
+        uint16_t backgroundAddress;
+        uint16_t tileAddress;
+
+        //Window Tile Map Display Select
+        if(top->gb->video->lcdc & 0x8)
+            backgroundAddress=0x1C00;
+        else
+            backgroundAddress=0x1800;
+
+        for (int line=0,y=0;line<32;line++,y+=8){
+            for (int row=0,x=0;row<32;row++,x+=8){
+
+                    if (top->gb->video->lcdc & 0x10){
+                        uint8_t tilenumber;
+                        tileAddress = 0x0;
+                        tilenumber = top->gb->vram0_array[backgroundAddress];
+                        tileAddress+=(tilenumber*16);
+                    }
+                    else{
+                        int8_t tilenumber;
+                        tileAddress = 0x800;
+                        tilenumber = top->gb->vram0_array[backgroundAddress];
+                        tileAddress+=((tilenumber+128)*16);
+                    }
+
+                    //8 2bytes pairs
+                    for (int i=0,pixely=0;i<8;i++,pixely++){
+                        uint8_t data1=top->gb->vram0_array[tileAddress+i*2];
+                        uint8_t data2=top->gb->vram0_array[tileAddress+i*2+1];
+
+                        //8 pixels per line
+                        for (int j=7,pixelx=0;j>-1;j--,pixelx++){
+
+                            int colorNumber = (data2 & (1<<j))?0x2:0;
+                            colorNumber |= (data1 & (1<<j))?1:0;
+                            SDL_Color value = getColor(colorNumber,0,top->gb->video);
+                            SDL_SetRenderDrawColor(renderer, value.r, value.g, value.b,SDL_ALPHA_OPAQUE);
+                            SDL_RenderDrawPoint(renderer,x+pixelx,y+pixely);
+                        }
+
+                    }
+                    backgroundAddress++;
+            }
+        }
+        SDL_SetRenderTarget(renderer, nullptr);
+    }
+
+
+}
+
+void drawTileMap(SDL_Texture* tilemap, SDL_Renderer* renderer, Vgb* top) {
+
+    SDL_SetRenderTarget(renderer, tilemap);
+    {
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255,SDL_ALPHA_OPAQUE);
+        SDL_RenderClear(renderer);
+
+        SDL_SetRenderDrawColor(renderer, 50, 50, 50,SDL_ALPHA_OPAQUE);
+
+        int x=16,y=16;
+        for (int i=0 ; i<15;i++ ){
+            for (int j=0;j<407;j++){
+                SDL_RenderDrawPoint(renderer,x,j);
+            }
+            x+=17;
+        }
+
+        for (int i=0 ; i<23;i++ ){
+            for (int j=0;j<271;j++){
+                SDL_RenderDrawPoint(renderer,j,y);
+            }
+            y+=17;
+        } 
+
+        x=0;
+        y=0;
+        int address = 0;
+        //16 bytes(0x10) per tile
+        for(int line=0;line <24;line++){
+            y=line*16+line;
+            for (int row = 0 ; row <16;row++){
+                x=row*16+row;
+
+
+                //8 2bytes pairs
+                for (int i=0,pixely=0;i<8;i++,pixely+=2){
+                    uint8_t data1=top->gb->vram0_array[address+i*2];
+                    uint8_t data2=top->gb->vram0_array[address+i*2+1];
+
+                    //8 pixels per line
+                    for (int j=7,pixelx=0;j>-1;j--,pixelx+=2){
+
+                        int colorNumber = (data2 & (1<<j))?0x2:0;
+                        colorNumber |= (data1 & (1<<j))?1:0;
+
+                        SDL_Color value = getColor(colorNumber,0,top->gb->video);
+                        SDL_SetRenderDrawColor(renderer, value.r, value.g, value.b,SDL_ALPHA_OPAQUE);
+                        SDL_RenderDrawPoint(renderer,x+pixelx,y+pixely);
+                        SDL_RenderDrawPoint(renderer,x+pixelx+1,y+pixely);
+                        SDL_RenderDrawPoint(renderer,x+pixelx,y+pixely+1);
+                        SDL_RenderDrawPoint(renderer,x+pixelx+1,y+pixely+1);
+                    }
+                }
+                address+=16;
+            }
+        }
+
+
+ 
+        SDL_SetRenderTarget(renderer, nullptr);
+    }
+
+}
+
 
 int main(int argc, char **argv) {
 	
@@ -69,27 +193,18 @@ int main(int argc, char **argv) {
 
 	ImGui::CreateContext();
 	ImGuiSDL::Initialize(renderer, 1280, 720);
+   
+    SDL_Texture* background = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB555, SDL_TEXTUREACCESS_TARGET, 256, 256);
+    SDL_Texture* tilemap = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB555, SDL_TEXTUREACCESS_TARGET, 271,407);
+    //TODO: sprites
+    
 
-    SDL_Texture* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, 100, 100);
-    
-    SDL_SetRenderTarget(renderer, texture);
-    SDL_SetRenderDrawColor(renderer, 255, 0, 255, 255);
-    SDL_RenderClear(renderer);
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDL_RenderDrawPoint(renderer,51,50);
-    SDL_RenderDrawPoint(renderer,50,51);
-    SDL_RenderDrawPoint(renderer,51,51);
-    SDL_RenderDrawPoint(renderer,50,50);
-    SDL_RenderDrawPoint(renderer,49,50);
-    SDL_RenderDrawPoint(renderer,50,51);
-    SDL_RenderDrawPoint(renderer,51,51);
-    SDL_RenderDrawPoint(renderer,50,50);
-    SDL_SetRenderTarget(renderer, nullptr);
-    
 
 	bool run = true;
     bool isGBC = false;
     bool runVerilator = false;
+    int lcd_mode = -1;
+    int lcd_mode_old = -2;
 	while (run)
 	{
 		ImGuiIO& io = ImGui::GetIO();
@@ -123,11 +238,20 @@ int main(int argc, char **argv) {
                     if (runVerilator){
                         i++;
                         top->reset = (i < 2);
+                        top->gb->video->lcdc = (i > 2)?0x80:0x00;
                         // dump variables into VCD file and toggle clock
                         for (clk=0; clk<2; clk++) {
                             tfp->dump (2*i+clk);
                             top->clk_sys = !top->clk_sys;
                             top->eval ();
+                            lcd_mode_old = lcd_mode;
+                            lcd_mode = top->lcd_mode;
+
+                            if ((lcd_mode == 3) && (lcd_mode_old!=3)) { //draw things 1 time
+                                drawBackground(background,renderer,top);
+                                drawTileMap(tilemap,renderer,top);
+                            }
+                            //TODO: connect buffer to video and draw that 
                         }
                         if (Verilated::gotFinish()) run = false;
                     }
@@ -151,13 +275,18 @@ int main(int argc, char **argv) {
 
 		ImGui::ShowDemoWindow();
 
-		ImGui::Begin("Image");
-		ImGui::Image(texture, ImVec2(100, 100));
+		ImGui::Begin("Background");
+		ImGui::Image(background, ImVec2(256, 256));
+		ImGui::End();
+
+        ImGui::Begin("TileMap");
+		ImGui::Image(tilemap, ImVec2(271, 407));
 		ImGui::End();
 
         ImGui::Begin("GB Config");
         ImGui::Checkbox("Enable Gameboy Color?",&isGBC);
         ImGui::Checkbox("Run?",&runVerilator);
+        ImGui::LabelText("LCD Mode","%d",lcd_mode);
         ImGui::LabelText("Cycles Elapsed","%d",i+2);
         ImGui::End();
 
