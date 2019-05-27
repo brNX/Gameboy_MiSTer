@@ -2,13 +2,13 @@
 #include "Vgb_gb.h"
 #include "verilated.h"
 #include "verilated_vcd_c.h"
+
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_opengl3.h"
 
 #include <stdio.h>
 #include <SDL.h>
-#include <SDL_gpu.h>
 #include <GL/gl3w.h>    // Initialize with gl3wInit()
 
 void drawTexture(){
@@ -61,8 +61,6 @@ int main(int argc, char **argv) {
 
     printf("OpenGL %s, GLSL %s\n", glGetString(GL_VERSION), glGetString(GL_SHADING_LANGUAGE_VERSION));
     
-    GPU_Image* image = GPU_LoadImage("face.png");
-
     int i;
     int clk;
     Verilated::commandArgs(argc, argv);
