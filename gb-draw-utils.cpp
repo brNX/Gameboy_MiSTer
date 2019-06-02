@@ -1,8 +1,3 @@
-#include "Vgb.h"
-#include "Vgb_gb.h"
-#include "Vgb_video.h"
-#include "verilated.h"
-#include "verilated_vcd_c.h"
 
 #include "SDL.h"
 #include <stdint.h>
@@ -13,9 +8,9 @@
 
 SDL_Color getColor(int number,int mode, Vgb_video* video){
     SDL_Color white = {255,255,255,255};
-    SDL_Color light_gray = {255,255,255,255};
-    SDL_Color dark_gray = {255,255,255,255};
-    SDL_Color black = {255,255,255,255};
+    SDL_Color light_gray = {190,190,190,255};
+    SDL_Color dark_gray = {90,90,90,255};
+    SDL_Color black = {0,0,0,255};
 
     int colorindex;
     uint8_t palette;
@@ -46,16 +41,23 @@ SDL_Color getColor(int number,int mode, Vgb_video* video){
         case 0: break ;
 
         //light gray
-        case 1: color=&light_gray;break ;
+        case 1: color=&light_gray;break;
 
         //dark gray
-        case 2: color=&dark_gray;break ;
+        case 2: color=&dark_gray;break;
 
         //black
-        case 3: color=&black;break ;
+        case 3: color=&black;break;
     }
 
     return *color;
 
 }
 
+
+void loadvram(char * fileName, CData * array) {
+    FILE *fileptr;
+    fileptr = fopen(fileName, "rb");  // Open the file in binary mode
+    fread(array, 8192, 1, fileptr); // Read in the entire file
+    fclose(fileptr); // Close the file
+}

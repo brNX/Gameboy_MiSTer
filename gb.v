@@ -42,10 +42,7 @@ module gb (
 	output [7:0] cpu_do,
 
 	// lcd interface
-	output lcd_clkena,
-	output [14:0] lcd_data,
-	output [1:0] lcd_mode,
-	output lcd_on
+	output [1:0] lcd_mode
 
 );
 
@@ -66,6 +63,14 @@ wire clk_cpu = clk_sys & current_cpu_ce;
 wire [12:0] video_addr;
 
 wire [12:0] curr_vram_addr = (vram_rd | vram1_rd | vram_wren | vram1_wren) ? vram_addr:video_addr;
+
+// lcd interface
+wire lcd_clkena;
+wire [14:0] lcd_data;
+wire [1:0] lcd_mode_wire;
+
+assign lcd_mode = lcd_mode_wire;
+wire lcd_on;
 
 
 video video (
@@ -90,7 +95,7 @@ video video (
 	.lcd_on      ( lcd_on        ),
 	.lcd_clkena  ( lcd_clkena    ),
 	.lcd_data    ( lcd_data      ),
-	.mode        ( lcd_mode      ),
+	.mode        ( lcd_mode_wire ),
 	
 	.vram_rd     (    ),
 	.vram_addr   ( video_addr    ),
@@ -105,10 +110,21 @@ video video (
 /* verilator lint_on PINCONNECTEMPTY */
 );
 
+
+lcd lcd (
+	 .clk    ( clk_cpu    ),
+
+	 // serial interface
+	 .clkena ( lcd_clkena ),
+	 .data   ( lcd_data   ),
+	 .mode   ( lcd_mode_wire ),  // used to detect begin of new lines and frames
+	 .on     ( lcd_on     )
+);
+
 // total 8k/16k (CGB) vram from $8000 to $9fff
 
-reg [7:0] vram0_array [0:8190] /*verilator public*/; 
-reg [7:0] vram1_array [0:8190] /*verilator public*/; 
+reg [7:0] vram0_array [0:8191] /*verilator public*/; 
+reg [7:0] vram1_array [0:8191] /*verilator public*/; 
 
 always @ (posedge clk_cpu)
     begin

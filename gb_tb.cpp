@@ -1,6 +1,7 @@
 #include "Vgb.h"
 #include "Vgb_gb.h"
 #include "Vgb_video.h"
+#include "Vgb_lcd.h"
 #include "verilated.h"
 #include "verilated_vcd_c.h"
 
@@ -147,11 +148,36 @@ void drawTileMap(SDL_Texture* tilemap, SDL_Renderer* renderer, Vgb* top) {
             }
         }
 
-
- 
         SDL_SetRenderTarget(renderer, nullptr);
     }
 
+}
+
+void drawLCD(SDL_Texture* tilemap, SDL_Renderer* renderer, Vgb* top) {
+    SDL_SetRenderTarget(renderer, tilemap);
+    {
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255,SDL_ALPHA_OPAQUE);
+        SDL_RenderClear(renderer);
+        
+        int i=0;
+        for (int y=0; y<144;y++){
+            for (int x=0;x<160;x++) {
+
+                int r5 = top->gb->lcd->lcd_buffer[i]&0x1F;
+                int g5 = (top->gb->lcd->lcd_buffer[i]>>5)&0x1F;
+                int b5 = (top->gb->lcd->lcd_buffer[i]>>10)&0x1F;
+
+                int r10 = (r5 * 13) + (g5 * 2) +b5;
+                int g10 = (g5 * 3) + b5;
+                int b10 = (r5 * 3) + (g5 * 2) + (b5 * 11);
+
+                SDL_SetRenderDrawColor(renderer, (r10&0x1FE)>>1, (g10&0x7F)<<1, (b10&0x1FE)>>1,SDL_ALPHA_OPAQUE);
+                SDL_RenderDrawPoint(renderer,x,y);
+                i++;
+            }
+        }
+        SDL_SetRenderTarget(renderer, nullptr);
+    }
 }
 
 
@@ -180,13 +206,13 @@ int main(int argc, char **argv) {
     top->reset = 1;
     top->ce = 1;
     top->ce_2x = 1;
-    top->gb->vram0_array[0] = 0x55;
-    top->gb->vram1_array[0] = 0x55;
-    top->eval ();
-    
+    loadvram("mario2dx-dumps/vram0-overworld.bin",top->gb->vram0_array);
+    loadvram("mario2dx-dumps/vram1-overworld.bin",top->gb->vram1_array);
+    top->eval ();  
 
     Uint32 delay = (33 / 10) * 10;  /* To round it down to the nearest 10 ms */
-    SDL_TimerID my_timer_id = SDL_AddTimer(delay, timerTick, NULL);
+
+    SDL_TimerID my_timer_id = SDL_AddTimer(1, timerTick, NULL);
 
     SDL_Window* window = SDL_CreateWindow("SDL2 ImGui Renderer", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_RESIZABLE);
 	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
@@ -196,6 +222,7 @@ int main(int argc, char **argv) {
    
     SDL_Texture* background = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB555, SDL_TEXTUREACCESS_TARGET, 256, 256);
     SDL_Texture* tilemap = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB555, SDL_TEXTUREACCESS_TARGET, 271,407);
+    SDL_Texture* lcd = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB555, SDL_TEXTUREACCESS_TARGET, 160,144);
     //TODO: sprites
     
 
@@ -239,6 +266,9 @@ int main(int argc, char **argv) {
                         i++;
                         top->reset = (i < 2);
                         top->gb->video->lcdc = (i > 2)?0x80:0x00;
+                        top->gb->video->bgp = 0xe4;
+                        top->gb->video->obp0 = 0xd0;
+                        top->gb->video->obp1 = 0x38;
                         // dump variables into VCD file and toggle clock
                         for (clk=0; clk<2; clk++) {
                             tfp->dump (2*i+clk);
@@ -251,6 +281,10 @@ int main(int argc, char **argv) {
                                 drawBackground(background,renderer,top);
                                 drawTileMap(tilemap,renderer,top);
                             }
+                            if ((lcd_mode == 0) && (lcd_mode_old!=0)) { //draw things 1 time
+                                drawLCD(lcd,renderer,top);
+                            }
+
                             //TODO: connect buffer to video and draw that 
                         }
                         if (Verilated::gotFinish()) run = false;
@@ -282,6 +316,11 @@ int main(int argc, char **argv) {
         ImGui::Begin("TileMap");
 		ImGui::Image(tilemap, ImVec2(271, 407));
 		ImGui::End();
+
+        ImGui::Begin("LCD");
+		ImGui::Image(lcd, ImVec2(160, 144));
+		ImGui::End();
+
 
         ImGui::Begin("GB Config");
         ImGui::Checkbox("Enable Gameboy Color?",&isGBC);
