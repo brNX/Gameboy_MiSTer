@@ -25,6 +25,7 @@ module gb (
 	input ce,
 	input ce_2x,
 	input cpu_speed,
+	input isGBC,
 	
 	input [12:0] vram_addr,
 	input vram_rd,
@@ -77,7 +78,7 @@ video video (
 	.reset		 ( reset         ),
 	.clk		 ( clk           ),
 	.clk_reg	 ( clk_cpu       ),   //can be 2x in cgb double speed mode
-	.isGBC		 ( 1'b0          ),
+	.isGBC		 ( isGBC         ),
 	
 
 /* verilator lint_off PINCONNECTEMPTY */
@@ -118,7 +119,8 @@ lcd lcd (
 	 .clkena ( lcd_clkena ),
 	 .data   ( lcd_data   ),
 	 .mode   ( lcd_mode_wire ),  // used to detect begin of new lines and frames
-	 .on     ( lcd_on     )
+	 .on     ( lcd_on     ),
+	 .isGBC	 ( isGBC      )
 );
 
 // total 8k/16k (CGB) vram from $8000 to $9fff

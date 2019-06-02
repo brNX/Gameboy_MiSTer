@@ -153,7 +153,7 @@ void drawTileMap(SDL_Texture* tilemap, SDL_Renderer* renderer, Vgb* top) {
 
 }
 
-void drawLCD(SDL_Texture* tilemap, SDL_Renderer* renderer, Vgb* top) {
+void drawLCD(SDL_Texture* tilemap, SDL_Renderer* renderer, Vgb* top, bool isGBC) {
     SDL_SetRenderTarget(renderer, tilemap);
     {
         SDL_SetRenderDrawColor(renderer, 255, 255, 255,SDL_ALPHA_OPAQUE);
@@ -163,15 +163,23 @@ void drawLCD(SDL_Texture* tilemap, SDL_Renderer* renderer, Vgb* top) {
         for (int y=0; y<144;y++){
             for (int x=0;x<160;x++) {
 
-                int r5 = top->gb->lcd->lcd_buffer[i]&0x1F;
-                int g5 = (top->gb->lcd->lcd_buffer[i]>>5)&0x1F;
-                int b5 = (top->gb->lcd->lcd_buffer[i]>>10)&0x1F;
+                if (isGBC) {
+                    int r5 = top->gb->lcd->lcd_buffer[i]&0x1F;
+                    int g5 = (top->gb->lcd->lcd_buffer[i]>>5)&0x1F;
+                    int b5 = (top->gb->lcd->lcd_buffer[i]>>10)&0x1F;
 
-                int r10 = (r5 * 13) + (g5 * 2) +b5;
-                int g10 = (g5 * 3) + b5;
-                int b10 = (r5 * 3) + (g5 * 2) + (b5 * 11);
+                    int r10 = (r5 * 13) + (g5 * 2) +b5;
+                    int g10 = (g5 * 3) + b5;
+                    int b10 = (r5 * 3) + (g5 * 2) + (b5 * 11);
 
-                SDL_SetRenderDrawColor(renderer, (r10&0x1FE)>>1, (g10&0x7F)<<1, (b10&0x1FE)>>1,SDL_ALPHA_OPAQUE);
+                    SDL_SetRenderDrawColor(renderer, (r10&0x1FE)>>1, (g10&0x7F)<<1, (b10&0x1FE)>>1,SDL_ALPHA_OPAQUE);
+                }else
+                {
+                    int pixel = top->gb->lcd->lcd_buffer[i];
+                    int  grey = (pixel==0)?252:(pixel==1)?168:(pixel==2)?96:0;
+                    SDL_SetRenderDrawColor(renderer, grey, grey, grey,SDL_ALPHA_OPAQUE);
+                }
+                
                 SDL_RenderDrawPoint(renderer,x,y);
                 i++;
             }
@@ -190,7 +198,6 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    
     int i;
     int clk;
     Verilated::commandArgs(argc, argv);
@@ -265,10 +272,16 @@ int main(int argc, char **argv) {
                     if (runVerilator){
                         i++;
                         top->reset = (i < 2);
-                        top->gb->video->lcdc = (i > 2)?0x80:0x00;
+                        top->gb->isGBC = isGBC;
+                        top->gb->video->lcdc = (i > 2)?0xE3:0x00;
                         top->gb->video->bgp = 0xe4;
                         top->gb->video->obp0 = 0xd0;
                         top->gb->video->obp1 = 0x38;
+                        top->gb->video->scy = 0x1A;
+                        top->gb->video->scx = 0x81;
+                        top->gb->video->wy = 0x88;
+                        top->gb->video->wx = 0x50;
+
                         // dump variables into VCD file and toggle clock
                         for (clk=0; clk<2; clk++) {
                             tfp->dump (2*i+clk);
@@ -282,7 +295,7 @@ int main(int argc, char **argv) {
                                 drawTileMap(tilemap,renderer,top);
                             }
                             if ((lcd_mode == 0) && (lcd_mode_old!=0)) { //draw things 1 time
-                                drawLCD(lcd,renderer,top);
+                                drawLCD(lcd,renderer,top,isGBC);
                             }
 
                             //TODO: connect buffer to video and draw that 

@@ -8,7 +8,8 @@ module lcd (
 	input   clkena,
 	input [14:0] data,
 	input [1:0] mode,
-    input  on
+    input  on,
+	input isGBC
 );
 
 
