@@ -215,10 +215,10 @@ int main(int argc, char **argv) {
     SDL_TimerID my_timer_id = SDL_AddTimer(1, timerTick, NULL);
 
     SDL_Window* window = SDL_CreateWindow("SDL2 ImGui Renderer", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_RESIZABLE);
-	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-	ImGui::CreateContext();
-	ImGuiSDL::Initialize(renderer, 1280, 720);
+    ImGui::CreateContext();
+    ImGuiSDL::Initialize(renderer, 1280, 720);
    
     SDL_Texture* background = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB555, SDL_TEXTUREACCESS_TARGET, 256, 256);
     SDL_Texture* tilemap = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB555, SDL_TEXTUREACCESS_TARGET, 271,407);
@@ -232,15 +232,15 @@ int main(int argc, char **argv) {
     bool runVerilator = false;
     int lcd_mode = -1;
     int lcd_mode_old = -2;
-	while (run)
-	{
-		ImGuiIO& io = ImGui::GetIO();
+    while (run)
+    {
+        ImGuiIO& io = ImGui::GetIO();
 
-		int wheel = 0;
+        int wheel = 0;
 
-		SDL_Event e;
-		while (SDL_PollEvent(&e))
-		{
+        SDL_Event e;
+        while (SDL_PollEvent(&e))
+        {
 
             switch(e.type)
             {            
@@ -292,34 +292,34 @@ int main(int argc, char **argv) {
                     break;
                 }
             }
-		}
+        }
 
-		int mouseX, mouseY;
-		const int buttons = SDL_GetMouseState(&mouseX, &mouseY);
+        int mouseX, mouseY;
+        const int buttons = SDL_GetMouseState(&mouseX, &mouseY);
 
-		// Setup low-level inputs (e.g. on Win32, GetKeyboardState(), or write to those fields from your Windows message loop handlers, etc.)
-		
-		io.DeltaTime = 1.0f / 60.0f;
-		io.MousePos = ImVec2(static_cast<float>(mouseX), static_cast<float>(mouseY));
-		io.MouseDown[0] = buttons & SDL_BUTTON(SDL_BUTTON_LEFT);
-		io.MouseDown[1] = buttons & SDL_BUTTON(SDL_BUTTON_RIGHT);
-		io.MouseWheel = static_cast<float>(wheel);
+        // Setup low-level inputs (e.g. on Win32, GetKeyboardState(), or write to those fields from your Windows message loop handlers, etc.)
+        
+        io.DeltaTime = 1.0f / 60.0f;
+        io.MousePos = ImVec2(static_cast<float>(mouseX), static_cast<float>(mouseY));
+        io.MouseDown[0] = buttons & SDL_BUTTON(SDL_BUTTON_LEFT);
+        io.MouseDown[1] = buttons & SDL_BUTTON(SDL_BUTTON_RIGHT);
+        io.MouseWheel = static_cast<float>(wheel);
 
-		ImGui::NewFrame();
+        ImGui::NewFrame();
 
-		ImGui::ShowDemoWindow();
+        ImGui::ShowDemoWindow();
 
-		ImGui::Begin("Background");
-		ImGui::Image(background, ImVec2(256, 256));
-		ImGui::End();
+        ImGui::Begin("Background");
+        ImGui::Image(background, ImVec2(256, 256));
+        ImGui::End();
 
         ImGui::Begin("TileMap");
-		ImGui::Image(tilemap, ImVec2(271, 407));
-		ImGui::End();
+        ImGui::Image(tilemap, ImVec2(271, 407));
+        ImGui::End();
 
         ImGui::Begin("LCD");
-		ImGui::Image(lcd, ImVec2(160, 144));
-		ImGui::End();
+        ImGui::Image(lcd, ImVec2(160, 144));
+        ImGui::End();
 
 
         ImGui::Begin("GB Config");
@@ -329,25 +329,25 @@ int main(int argc, char **argv) {
         ImGui::LabelText("Cycles Elapsed","%d",i+2);
         ImGui::End();
 
-		SDL_SetRenderDrawColor(renderer, 114, 144, 154, 255);
-		SDL_RenderClear(renderer);
+        SDL_SetRenderDrawColor(renderer, 114, 144, 154, 255);
+        SDL_RenderClear(renderer);
 
-		ImGui::Render();
-		ImGuiSDL::Render(ImGui::GetDrawData());
+        ImGui::Render();
+        ImGuiSDL::Render(ImGui::GetDrawData());
 
-		SDL_RenderPresent(renderer);
-	}
+        SDL_RenderPresent(renderer);
+    }
 
     
     tfp->close();
 
-	ImGuiSDL::Deinitialize();
+    ImGuiSDL::Deinitialize();
 
-	SDL_DestroyRenderer(renderer);
-	SDL_DestroyWindow(window);
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
 
-	ImGui::DestroyContext();
+    ImGui::DestroyContext();
 
-	return 0;  
+    return 0;  
 
 }
