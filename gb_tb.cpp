@@ -155,27 +155,71 @@ void drawTileMap(SDL_Texture* tilemap, SDL_Renderer* renderer, Vgb* top) {
 
 }
 
-void drawSprite(SDL_Texture* sprite, SDL_Renderer* renderer, Vgb_sprite* sprite,Vgb* top, bool isGBC) {
-    //vram (0x8000 +(tileLocation*16))+line
-    int tilelocation = sprite->tile*16;
-    int vrambank=0;
-    int palette[4];
-    if (isGBC)
-        vrambank = (sprite->flags & 0x8)>>3;
+void drawSprite(SDL_Texture* sprite_texture, SDL_Renderer* renderer, Vgb_sprite* sprite,Vgb* top, bool isGBC) {
+    
+    SDL_SetRenderTarget(renderer, sprite_texture);
+    {
 
-    if (isGBC) {
-        int palettenumber = sprite->flags & 0x7;
-        //TODO: fetch gbc palettes
-    }else {
-        int palettenumber = (sprite->flags & 0x10)>>4;
-        palette[0]= palettenumber?top->gb->video->obp1:top->gb->video->obp0;
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255,SDL_ALPHA_OPAQUE);
+        SDL_RenderClear(renderer);
+        //vram (0x8000 +(tileLocation*16))+line
+        int tilelocation = sprite->tile*16;
+        int vrambank=0;
+        SDL_Color palette[4];
+
+        if (isGBC)
+            vrambank = (sprite->flags & 0x8)>>3;
+
+        if (isGBC) {
+            int palette_index = (sprite->flags & 0x7)<<3;
+            for (int i=0;i<4;i++){
+                int index = palette_index+i*2;
+
+                
+                int r5 = top->gb->video->obpd[index]&0x1F;
+                int g5 = ((top->gb->video->obpd[index+1]&0x3)<<3) | ((top->gb->video->obpd[index]&0xE0)>>5);
+                int b5 = (top->gb->video->obpd[index+1]&0x7C)>>2;
+
+                int r10 = (r5 * 13) + (g5 * 2) +b5;
+                int g10 = (g5 * 3) + b5;
+                int b10 = (r5 * 3) + (g5 * 2) + (b5 * 11);
+                
+                palette[i].r = (r10&0x1FE)>>1;
+                palette[i].g = (g10&0x7F)<<1;
+                palette[i].b = (b10&0x1FE)>>1;
+
+                palette[i].a = SDL_ALPHA_OPAQUE;
+            }
+        }else {
+            int palettenumber = (sprite->flags & 0x10)>>4;
+            for (int i=0;i<4;i++){
+                palette[i]= getColor(i,palettenumber?2:1,top->gb->video);
+            } 
+        }
+        
+        //8 2bytes pairs
+        for (int i=0,pixely=0;i<8;i++,pixely++){
+            uint8_t data1,data2;
+            if (vrambank) {
+                data1=top->gb->vram1_array[tilelocation+i*2];
+                data2=top->gb->vram1_array[tilelocation+i*2+1];
+            }else{
+                data1=top->gb->vram0_array[tilelocation+i*2];
+                data2=top->gb->vram0_array[tilelocation+i*2+1];
+            }
+
+            //8 pixels per line
+            for (int j=7,pixelx=0;j>-1;j--,pixelx++){
+
+                int colorNumber = (data2 & (1<<j))?0x2:0;
+                colorNumber |= (data1 & (1<<j))?1:0;
+                SDL_SetRenderDrawColor(renderer, palette[colorNumber].r, palette[colorNumber].g, palette[colorNumber].b,SDL_ALPHA_OPAQUE);
+                SDL_RenderDrawPoint(renderer,pixelx,pixely);
+            }
+        }
+        SDL_SetRenderTarget(renderer, nullptr);
     }
-    
-
-    //TODO: finish drawing
-
-
-    
+   
 
 }
 
@@ -198,7 +242,11 @@ void drawLCD(SDL_Texture* tilemap, SDL_Renderer* renderer, Vgb* top, bool isGBC)
                     int g10 = (g5 * 3) + b5;
                     int b10 = (r5 * 3) + (g5 * 2) + (b5 * 11);
 
-                    SDL_SetRenderDrawColor(renderer, (r10&0x1FE)>>1, (g10&0x7F)<<1, (b10&0x1FE)>>1,SDL_ALPHA_OPAQUE);
+                    /*Bit 0-4   Red Intensity   (00-1F)
+                    Bit 5-9   Green Intensity (00-1F)
+                    Bit 10-14 Blue Intensity  (00-1F) */
+
+                    SDL_SetRenderDrawColor(renderer, (r10&0x1FE)>>1, (g10&0x7F)<<1,(b10&0x1FE)>>1,SDL_ALPHA_OPAQUE);
                 }else
                 {
                     int pixel = top->gb->lcd->lcd_buffer[i];
@@ -245,6 +293,7 @@ int main(int argc, char **argv) {
     VerilatedVcdC* tfp = new VerilatedVcdC;
     top->trace (tfp, 99);
     tfp->open ("gb.vcd");*/
+
 
     Vgb_sprite * sprites_array[40];
     sprites_array[0]=top->gb->video->sprites->spr__BRA__0__KET____DOT__sprite;
@@ -295,6 +344,7 @@ int main(int argc, char **argv) {
     top->reset = 1;
     top->ce = 1;
     top->ce_2x = 1;
+    top->isGBC = 1;
     loadvram("mario2dx-dumps/vram0-overworld.bin",top->gb->vram0_array);
     loadvram("mario2dx-dumps/vram1-overworld.bin",top->gb->vram1_array);
 
@@ -341,12 +391,12 @@ int main(int argc, char **argv) {
 
     SDL_Texture* sprites[40];
     for (int i =0; i<40;i++){
-        sprites[i] = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB555, SDL_TEXTUREACCESS_TARGET, 16,16);  
+        sprites[i] = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB555, SDL_TEXTUREACCESS_TARGET, 8,8);  
     }
 
 
     bool run = true;
-    bool isGBC = false;
+    bool isGBC = true;
     bool runVerilator = false;
     int lcd_mode = -1;
     int lcd_mode_old = -2;
@@ -387,7 +437,7 @@ int main(int argc, char **argv) {
                         for (int z = 0; z<4*4;z++){
                             i++;
                             top->reset = (i < 2);
-                            top->gb->isGBC = isGBC;
+                            top->isGBC = isGBC;
                             top->gb->video->lcdc = (i > 2)?0xE3:0x00;
                             top->gb->video->bgp = 0xe4;
                             top->gb->video->obp0 = 0xd0;
@@ -396,6 +446,153 @@ int main(int argc, char **argv) {
                             top->gb->video->scx = 0x81;
                             top->gb->video->wy = 0x88;
                             top->gb->video->wx = 0x50;
+
+                            //bgpd
+                            top->gb->video->bgpd[0] = 0x6f;
+                            top->gb->video->bgpd[1] = 0xdd;
+                            top->gb->video->bgpd[2] = 0xf5;
+                            top->gb->video->bgpd[3] = 0x1a;
+                            top->gb->video->bgpd[4] = 0x2f;
+                            top->gb->video->bgpd[5] = 0x16;
+                            top->gb->video->bgpd[6] = 0x00;
+                            top->gb->video->bgpd[7] = 0x00;
+
+                            top->gb->video->bgpd[8] = 0x9b;
+                            top->gb->video->bgpd[9] = 0x2e;
+                            top->gb->video->bgpd[10] = 0xf5;
+                            top->gb->video->bgpd[11] = 0x1a;
+                            top->gb->video->bgpd[12] = 0xb4;
+                            top->gb->video->bgpd[13] = 0x11;
+                            top->gb->video->bgpd[14] = 0x00;
+                            top->gb->video->bgpd[15] = 0x00;
+
+                            top->gb->video->bgpd[16] = 0xff;
+                            top->gb->video->bgpd[17] = 0x7f;
+                            top->gb->video->bgpd[18] = 0xf5;
+                            top->gb->video->bgpd[19] = 0x1a;
+                            top->gb->video->bgpd[20] = 0x1f;
+                            top->gb->video->bgpd[21] = 0x21;
+                            top->gb->video->bgpd[22] = 0x00;
+                            top->gb->video->bgpd[23] = 0x00;
+
+                            top->gb->video->bgpd[24] = 0xbe;
+                            top->gb->video->bgpd[25] = 0x6f;
+                            top->gb->video->bgpd[26] = 0x9b;
+                            top->gb->video->bgpd[27] = 0x2e;
+                            top->gb->video->bgpd[28] = 0xb4;
+                            top->gb->video->bgpd[29] = 0x11;
+                            top->gb->video->bgpd[30] = 0x00;
+                            top->gb->video->bgpd[31] = 0x00;
+
+                            top->gb->video->bgpd[32] = 0xff;
+                            top->gb->video->bgpd[33] = 0x7f;
+                            top->gb->video->bgpd[34] = 0x08;
+                            top->gb->video->bgpd[35] = 0x7f;
+                            top->gb->video->bgpd[36] = 0xb4;
+                            top->gb->video->bgpd[37] = 0x11;
+                            top->gb->video->bgpd[38] = 0x00;
+                            top->gb->video->bgpd[39] = 0x00;
+
+                            top->gb->video->bgpd[40] = 0x08;
+                            top->gb->video->bgpd[41] = 0x7f;
+                            top->gb->video->bgpd[42] = 0xf5;
+                            top->gb->video->bgpd[43] = 0x1a;
+                            top->gb->video->bgpd[44] = 0x2f;
+                            top->gb->video->bgpd[45] = 0x16;
+                            top->gb->video->bgpd[46] = 0x00;
+                            top->gb->video->bgpd[47] = 0x00;
+
+                            top->gb->video->bgpd[48] = 0xff;
+                            top->gb->video->bgpd[49] = 0x7f;
+                            top->gb->video->bgpd[50] = 0x08;
+                            top->gb->video->bgpd[51] = 0x7f;
+                            top->gb->video->bgpd[52] = 0xfb;
+                            top->gb->video->bgpd[53] = 0x26;
+                            top->gb->video->bgpd[54] = 0x00;
+                            top->gb->video->bgpd[55] = 0x00;
+
+                            top->gb->video->bgpd[56] = 0x9b;
+                            top->gb->video->bgpd[57] = 0x2e;
+                            top->gb->video->bgpd[58] = 0x08;
+                            top->gb->video->bgpd[59] = 0x7f;
+                            top->gb->video->bgpd[60] = 0xb4;
+                            top->gb->video->bgpd[61] = 0x11;
+                            top->gb->video->bgpd[62] = 0x00;
+                            top->gb->video->bgpd[63] = 0x00;
+
+                        //obpd
+
+                            top->gb->video->obpd[0] = 0x77;
+                            top->gb->video->obpd[1] = 0x77;
+                            top->gb->video->obpd[2] = 0x7d;
+                            top->gb->video->obpd[3] = 0x3a;
+                            top->gb->video->obpd[4] = 0x7c;
+                            top->gb->video->obpd[5] = 0x10;
+                            top->gb->video->obpd[6] = 0x00;
+                            top->gb->video->obpd[7] = 0x00;
+
+                            top->gb->video->obpd[8] = 0x77;
+                            top->gb->video->obpd[9] = 0x77;
+                            top->gb->video->obpd[10] = 0xff;
+                            top->gb->video->obpd[11] = 0x7f;
+                            top->gb->video->obpd[12] = 0xef;
+                            top->gb->video->obpd[13] = 0x3d;
+                            top->gb->video->obpd[14] = 0x00;
+                            top->gb->video->obpd[15] = 0x00;
+
+                            top->gb->video->obpd[16] = 0x77;
+                            top->gb->video->obpd[17] = 0x77;
+                            top->gb->video->obpd[18] = 0x7d;
+                            top->gb->video->obpd[19] = 0x67;
+                            top->gb->video->obpd[20] = 0xb9;
+                            top->gb->video->obpd[21] = 0x32;
+                            top->gb->video->obpd[22] = 0x00;
+                            top->gb->video->obpd[23] = 0x00;
+
+                            top->gb->video->obpd[24] = 0x77;
+                            top->gb->video->obpd[25] = 0x77;
+                            top->gb->video->obpd[26] = 0x3a;
+                            top->gb->video->obpd[27] = 0x6f;
+                            top->gb->video->obpd[28] = 0xf2;
+                            top->gb->video->obpd[29] = 0x5d;
+                            top->gb->video->obpd[30] = 0x00;
+                            top->gb->video->obpd[31] = 0x00;
+
+                            top->gb->video->obpd[32] = 0x77;
+                            top->gb->video->obpd[33] = 0x77;
+                            top->gb->video->obpd[34] = 0xff;
+                            top->gb->video->obpd[35] = 0x7f;
+                            top->gb->video->obpd[36] = 0x5e;
+                            top->gb->video->obpd[37] = 0x0b;
+                            top->gb->video->obpd[38] = 0x00;
+                            top->gb->video->obpd[39] = 0x00;
+
+                            top->gb->video->obpd[40] = 0x77;
+                            top->gb->video->obpd[41] = 0x77;
+                            top->gb->video->obpd[42] = 0xff;
+                            top->gb->video->obpd[43] = 0x7f;
+                            top->gb->video->obpd[44] = 0x3f;
+                            top->gb->video->obpd[45] = 0x02;
+                            top->gb->video->obpd[46] = 0x00;
+                            top->gb->video->obpd[47] = 0x00;
+
+                            top->gb->video->obpd[48] = 0x77;
+                            top->gb->video->obpd[49] = 0x77;
+                            top->gb->video->obpd[50] = 0x5e;
+                            top->gb->video->obpd[51] = 0x0b;
+                            top->gb->video->obpd[52] = 0xaf;
+                            top->gb->video->obpd[53] = 0x01;
+                            top->gb->video->obpd[54] = 0x00;
+                            top->gb->video->obpd[55] = 0x00;
+
+                            top->gb->video->obpd[56] = 0x77;
+                            top->gb->video->obpd[57] = 0x77;
+                            top->gb->video->obpd[58] = 0xda;
+                            top->gb->video->obpd[59] = 0x46;
+                            top->gb->video->obpd[60] = 0x37;
+                            top->gb->video->obpd[61] = 0x01;
+                            top->gb->video->obpd[62] = 0x00;
+                            top->gb->video->obpd[63] = 0x00;
 
                             // dump variables into VCD file and toggle clock
                             for (clk=0; clk<2; clk++) {
@@ -410,7 +607,10 @@ int main(int argc, char **argv) {
                                     drawTileMap(tilemap,renderer,top);
                                 }
                                 if ((lcd_mode == 0) && (lcd_mode_old!=0)) { //draw things 1 time
-                                    drawLCD(lcd,renderer,top,0);
+                                    drawLCD(lcd,renderer,top,isGBC);
+                                    for (int i=0;i<40;i++){
+                                        drawSprite(sprites[i],renderer,sprites_array[i],top,isGBC);
+                                    }
                                 }
                             }
                         }

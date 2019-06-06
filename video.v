@@ -23,7 +23,7 @@ module video (
 	input  reset,
 	input  clk,    // 4 Mhz cpu clock
 	input  clk_reg,
-	input  isGBC,
+	input  isGBC /*verilator public*/,
 
 	// cpu register adn oam interface
 	input  cpu_sel_oam,
