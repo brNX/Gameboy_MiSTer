@@ -216,10 +216,10 @@ int main(int argc, char **argv) {
     Vgb* top = new Vgb;
     
     // init trace dump
-    /*Verilated::traceEverOn(true);
+    Verilated::traceEverOn(true);
     VerilatedVcdC* tfp = new VerilatedVcdC;
     top->trace (tfp, 99);
-    tfp->open ("gb.vcd");*/
+    tfp->open ("gb.vcd");
 
 
     Vgb_sprite * sprites_array[40];
@@ -301,7 +301,7 @@ int main(int argc, char **argv) {
 
     top->eval ();  
 
-    SDL_TimerID my_timer_id = SDL_AddTimer(1, timerTick, NULL);
+    SDL_TimerID my_timer_id = SDL_AddTimer(2, timerTick, NULL);
 
     const int window_x = 1980;
     const int window_y = 1080;
@@ -314,6 +314,7 @@ int main(int argc, char **argv) {
    
     SDL_Texture* background = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB555, SDL_TEXTUREACCESS_TARGET, 256, 256);
     SDL_Texture* tilemap = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB555, SDL_TEXTUREACCESS_TARGET, 271,407);
+    SDL_Texture* tilemap2 = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB555, SDL_TEXTUREACCESS_TARGET, 271,407);
     SDL_Texture* lcd = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB555, SDL_TEXTUREACCESS_TARGET, 160,144);
 
     SDL_Texture* sprites[40];
@@ -378,7 +379,7 @@ int main(int argc, char **argv) {
 
                             // dump variables into VCD file and toggle clock
                             for (clk=0; clk<2; clk++) {
-                                //tfp->dump (2*i+clk);
+                                tfp->dump (2*i+clk);
                                 top->clk_sys = !top->clk_sys;
                                 top->eval ();
                                 lcd_mode_old = lcd_mode;
@@ -386,7 +387,8 @@ int main(int argc, char **argv) {
 
                                 if ((lcd_mode == 3) && (lcd_mode_old!=3)) { //draw things 1 time
                                     drawBackground(background,renderer,top);
-                                    drawTileMap(tilemap,renderer,top);
+                                    drawTileMap(tilemap,renderer,top,0);
+                                    drawTileMap(tilemap2,renderer,top,1);
                                 }
                                 if ((lcd_mode == 0) && (lcd_mode_old!=0)) { //draw things 1 time
                                     drawLCD(lcd,renderer,top,isGBC);
@@ -424,6 +426,8 @@ int main(int argc, char **argv) {
 
         ImGui::Begin("TileMap");
         ImGui::Image(tilemap, ImVec2(271, 407));
+        ImGui::SameLine();
+        ImGui::Image(tilemap2, ImVec2(271, 407));
         ImGui::End();
 
         ImGui::Begin("LCD");
@@ -527,12 +531,13 @@ int main(int argc, char **argv) {
     }
 
     
-    //tfp->close();
+    tfp->close();
 
     ImGuiSDL::Deinitialize();
 
     SDL_DestroyTexture(background);
     SDL_DestroyTexture(tilemap);
+    SDL_DestroyTexture(tilemap2);
     SDL_DestroyTexture(lcd);
 
     for (int i =0; i<40;i++){
