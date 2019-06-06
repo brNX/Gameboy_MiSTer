@@ -87,6 +87,7 @@ sprites sprites (
 	.clk      ( clk          ),
 	.clk_reg  ( clk_reg      ),
 	.size16   ( lcdc_spr_siz ),
+	.isGBC    ( isGBC        ),
 
 	.v_cnt    ( v_cnt        ),
 	.h_cnt    ( sprite_hcnt[7:0] ), // sprites are added in second stage

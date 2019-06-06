@@ -78,7 +78,7 @@ video video (
 	.reset		 ( reset         ),
 	.clk		 ( clk           ),
 	.clk_reg	 ( clk_cpu       ),   //can be 2x in cgb double speed mode
-	.isGBC		 ( isGBC        ),
+	.isGBC		 ( isGBC         ),
 	
 
 /* verilator lint_off PINCONNECTEMPTY */

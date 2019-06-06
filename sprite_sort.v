@@ -89,8 +89,8 @@ generate
 				values[i] <= in[i];
 				index[i] <= i[5:0];
 			end else begin
-				values[i] <= sort_val[i];
-				index[i] <= sort_idx[i];
+				   values[i] <= sort_val[i];
+				   index[i] <= sort_idx[i];
 			end
 		end
 	end

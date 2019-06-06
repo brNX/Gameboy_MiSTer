@@ -22,11 +22,14 @@
 module sprite (
 	input clk,
 	input size16,
+	input [7:0] sprite_index,
+	input isGBC,
 
 	input [7:0] v_cnt,
 	input [7:0] h_cnt,
 
 	output [7:0] x /*verilator public*/,
+
 	
 	// interface to read pixel data from memory	
 	output [10:0] addr /*verilator public*/,
@@ -50,7 +53,9 @@ module sprite (
 
 // x position for priority detection. Invisible sprites are far to the right and
 // have minimum priority
-assign x = v_visible?x_pos:8'hff;
+assign x = v_visible?
+					isGBC?sprite_index:x_pos:
+				8'hff;
 
 // register used to store pixel data for current line
 reg [7:0] data0 /*verilator public*/;
