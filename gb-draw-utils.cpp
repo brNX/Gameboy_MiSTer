@@ -222,7 +222,7 @@ void drawSprite(SDL_Texture* sprite_texture, SDL_Renderer* renderer, Vgb_sprite*
         }
         
         //8 2bytes pairs
-        for (int i=0,pixely=0;i<8;i++,pixely++){
+        for (int i=0,y=0;i<8;i++,y++){
             uint8_t data1,data2;
             if (vrambank) {
                 data1=top->gb->vram1_array[tilelocation+i*2];
@@ -233,14 +233,22 @@ void drawSprite(SDL_Texture* sprite_texture, SDL_Renderer* renderer, Vgb_sprite*
             }
 
             //8 pixels per line
-            for (int j=7,pixelx=0;j>-1;j--,pixelx++){
+            for (int j=7,x=0;j>-1;j--,x++){
 
                 int colorNumber = (data2 & (1<<j))?0x2:0;
                 colorNumber |= (data1 & (1<<j))?1:0;
                 SDL_SetRenderDrawColor(renderer, palette[colorNumber].r, palette[colorNumber].g, palette[colorNumber].b,SDL_ALPHA_OPAQUE);
+                
+                int pixelx= sprite->flags&0x20?7-x:x;
+                int pixely= sprite->flags&0x40?7-y:y;
+
+               
                 SDL_RenderDrawPoint(renderer,pixelx,pixely);
             }
         }
+
+
+
         SDL_SetRenderTarget(renderer, nullptr);
     }
    
