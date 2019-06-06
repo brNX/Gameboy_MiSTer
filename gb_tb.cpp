@@ -269,6 +269,155 @@ void setSprite(Vgb_sprite* sprite, int8_t y_pos, int8_t x_pos, int8_t tile, int8
     sprite->flags = flags;
 }
 
+void setGBCPalettes(Vgb* top){
+    //bgpd
+    top->gb->video->bgpd[0] = 0x6f;
+    top->gb->video->bgpd[1] = 0xdd;
+    top->gb->video->bgpd[2] = 0xf5;
+    top->gb->video->bgpd[3] = 0x1a;
+    top->gb->video->bgpd[4] = 0x2f;
+    top->gb->video->bgpd[5] = 0x16;
+    top->gb->video->bgpd[6] = 0x00;
+    top->gb->video->bgpd[7] = 0x00;
+
+    top->gb->video->bgpd[8] = 0x9b;
+    top->gb->video->bgpd[9] = 0x2e;
+    top->gb->video->bgpd[10] = 0xf5;
+    top->gb->video->bgpd[11] = 0x1a;
+    top->gb->video->bgpd[12] = 0xb4;
+    top->gb->video->bgpd[13] = 0x11;
+    top->gb->video->bgpd[14] = 0x00;
+    top->gb->video->bgpd[15] = 0x00;
+
+    top->gb->video->bgpd[16] = 0xff;
+    top->gb->video->bgpd[17] = 0x7f;
+    top->gb->video->bgpd[18] = 0xf5;
+    top->gb->video->bgpd[19] = 0x1a;
+    top->gb->video->bgpd[20] = 0x1f;
+    top->gb->video->bgpd[21] = 0x21;
+    top->gb->video->bgpd[22] = 0x00;
+    top->gb->video->bgpd[23] = 0x00;
+
+    top->gb->video->bgpd[24] = 0xbe;
+    top->gb->video->bgpd[25] = 0x6f;
+    top->gb->video->bgpd[26] = 0x9b;
+    top->gb->video->bgpd[27] = 0x2e;
+    top->gb->video->bgpd[28] = 0xb4;
+    top->gb->video->bgpd[29] = 0x11;
+    top->gb->video->bgpd[30] = 0x00;
+    top->gb->video->bgpd[31] = 0x00;
+
+    top->gb->video->bgpd[32] = 0xff;
+    top->gb->video->bgpd[33] = 0x7f;
+    top->gb->video->bgpd[34] = 0x08;
+    top->gb->video->bgpd[35] = 0x7f;
+    top->gb->video->bgpd[36] = 0xb4;
+    top->gb->video->bgpd[37] = 0x11;
+    top->gb->video->bgpd[38] = 0x00;
+    top->gb->video->bgpd[39] = 0x00;
+
+    top->gb->video->bgpd[40] = 0x08;
+    top->gb->video->bgpd[41] = 0x7f;
+    top->gb->video->bgpd[42] = 0xf5;
+    top->gb->video->bgpd[43] = 0x1a;
+    top->gb->video->bgpd[44] = 0x2f;
+    top->gb->video->bgpd[45] = 0x16;
+    top->gb->video->bgpd[46] = 0x00;
+    top->gb->video->bgpd[47] = 0x00;
+
+    top->gb->video->bgpd[48] = 0xff;
+    top->gb->video->bgpd[49] = 0x7f;
+    top->gb->video->bgpd[50] = 0x08;
+    top->gb->video->bgpd[51] = 0x7f;
+    top->gb->video->bgpd[52] = 0xfb;
+    top->gb->video->bgpd[53] = 0x26;
+    top->gb->video->bgpd[54] = 0x00;
+    top->gb->video->bgpd[55] = 0x00;
+
+    top->gb->video->bgpd[56] = 0x9b;
+    top->gb->video->bgpd[57] = 0x2e;
+    top->gb->video->bgpd[58] = 0x08;
+    top->gb->video->bgpd[59] = 0x7f;
+    top->gb->video->bgpd[60] = 0xb4;
+    top->gb->video->bgpd[61] = 0x11;
+    top->gb->video->bgpd[62] = 0x00;
+    top->gb->video->bgpd[63] = 0x00;
+
+    //obpd
+
+    top->gb->video->obpd[0] = 0x77;
+    top->gb->video->obpd[1] = 0x77;
+    top->gb->video->obpd[2] = 0x7d;
+    top->gb->video->obpd[3] = 0x3a;
+    top->gb->video->obpd[4] = 0x7c;
+    top->gb->video->obpd[5] = 0x10;
+    top->gb->video->obpd[6] = 0x00;
+    top->gb->video->obpd[7] = 0x00;
+
+    top->gb->video->obpd[8] = 0x77;
+    top->gb->video->obpd[9] = 0x77;
+    top->gb->video->obpd[10] = 0xff;
+    top->gb->video->obpd[11] = 0x7f;
+    top->gb->video->obpd[12] = 0xef;
+    top->gb->video->obpd[13] = 0x3d;
+    top->gb->video->obpd[14] = 0x00;
+    top->gb->video->obpd[15] = 0x00;
+
+    top->gb->video->obpd[16] = 0x77;
+    top->gb->video->obpd[17] = 0x77;
+    top->gb->video->obpd[18] = 0x7d;
+    top->gb->video->obpd[19] = 0x67;
+    top->gb->video->obpd[20] = 0xb9;
+    top->gb->video->obpd[21] = 0x32;
+    top->gb->video->obpd[22] = 0x00;
+    top->gb->video->obpd[23] = 0x00;
+
+    top->gb->video->obpd[24] = 0x77;
+    top->gb->video->obpd[25] = 0x77;
+    top->gb->video->obpd[26] = 0x3a;
+    top->gb->video->obpd[27] = 0x6f;
+    top->gb->video->obpd[28] = 0xf2;
+    top->gb->video->obpd[29] = 0x5d;
+    top->gb->video->obpd[30] = 0x00;
+    top->gb->video->obpd[31] = 0x00;
+
+    top->gb->video->obpd[32] = 0x77;
+    top->gb->video->obpd[33] = 0x77;
+    top->gb->video->obpd[34] = 0xff;
+    top->gb->video->obpd[35] = 0x7f;
+    top->gb->video->obpd[36] = 0x5e;
+    top->gb->video->obpd[37] = 0x0b;
+    top->gb->video->obpd[38] = 0x00;
+    top->gb->video->obpd[39] = 0x00;
+
+    top->gb->video->obpd[40] = 0x77;
+    top->gb->video->obpd[41] = 0x77;
+    top->gb->video->obpd[42] = 0xff;
+    top->gb->video->obpd[43] = 0x7f;
+    top->gb->video->obpd[44] = 0x3f;
+    top->gb->video->obpd[45] = 0x02;
+    top->gb->video->obpd[46] = 0x00;
+    top->gb->video->obpd[47] = 0x00;
+
+    top->gb->video->obpd[48] = 0x77;
+    top->gb->video->obpd[49] = 0x77;
+    top->gb->video->obpd[50] = 0x5e;
+    top->gb->video->obpd[51] = 0x0b;
+    top->gb->video->obpd[52] = 0xaf;
+    top->gb->video->obpd[53] = 0x01;
+    top->gb->video->obpd[54] = 0x00;
+    top->gb->video->obpd[55] = 0x00;
+
+    top->gb->video->obpd[56] = 0x77;
+    top->gb->video->obpd[57] = 0x77;
+    top->gb->video->obpd[58] = 0xda;
+    top->gb->video->obpd[59] = 0x46;
+    top->gb->video->obpd[60] = 0x37;
+    top->gb->video->obpd[61] = 0x01;
+    top->gb->video->obpd[62] = 0x00;
+    top->gb->video->obpd[63] = 0x00;
+}
+
 void getSpriteInfo(Vgb_sprite* sprite,char * spriteinfo){
     sprintf(spriteinfo,"X:%02X\nY:%02X\nT:%02X\nF:%02X",sprite->x_pos,sprite->y_pos,sprite->tile,sprite->flags);
 }
@@ -447,152 +596,7 @@ int main(int argc, char **argv) {
                             top->gb->video->wy = 0x88;
                             top->gb->video->wx = 0x50;
 
-                            //bgpd
-                            top->gb->video->bgpd[0] = 0x6f;
-                            top->gb->video->bgpd[1] = 0xdd;
-                            top->gb->video->bgpd[2] = 0xf5;
-                            top->gb->video->bgpd[3] = 0x1a;
-                            top->gb->video->bgpd[4] = 0x2f;
-                            top->gb->video->bgpd[5] = 0x16;
-                            top->gb->video->bgpd[6] = 0x00;
-                            top->gb->video->bgpd[7] = 0x00;
-
-                            top->gb->video->bgpd[8] = 0x9b;
-                            top->gb->video->bgpd[9] = 0x2e;
-                            top->gb->video->bgpd[10] = 0xf5;
-                            top->gb->video->bgpd[11] = 0x1a;
-                            top->gb->video->bgpd[12] = 0xb4;
-                            top->gb->video->bgpd[13] = 0x11;
-                            top->gb->video->bgpd[14] = 0x00;
-                            top->gb->video->bgpd[15] = 0x00;
-
-                            top->gb->video->bgpd[16] = 0xff;
-                            top->gb->video->bgpd[17] = 0x7f;
-                            top->gb->video->bgpd[18] = 0xf5;
-                            top->gb->video->bgpd[19] = 0x1a;
-                            top->gb->video->bgpd[20] = 0x1f;
-                            top->gb->video->bgpd[21] = 0x21;
-                            top->gb->video->bgpd[22] = 0x00;
-                            top->gb->video->bgpd[23] = 0x00;
-
-                            top->gb->video->bgpd[24] = 0xbe;
-                            top->gb->video->bgpd[25] = 0x6f;
-                            top->gb->video->bgpd[26] = 0x9b;
-                            top->gb->video->bgpd[27] = 0x2e;
-                            top->gb->video->bgpd[28] = 0xb4;
-                            top->gb->video->bgpd[29] = 0x11;
-                            top->gb->video->bgpd[30] = 0x00;
-                            top->gb->video->bgpd[31] = 0x00;
-
-                            top->gb->video->bgpd[32] = 0xff;
-                            top->gb->video->bgpd[33] = 0x7f;
-                            top->gb->video->bgpd[34] = 0x08;
-                            top->gb->video->bgpd[35] = 0x7f;
-                            top->gb->video->bgpd[36] = 0xb4;
-                            top->gb->video->bgpd[37] = 0x11;
-                            top->gb->video->bgpd[38] = 0x00;
-                            top->gb->video->bgpd[39] = 0x00;
-
-                            top->gb->video->bgpd[40] = 0x08;
-                            top->gb->video->bgpd[41] = 0x7f;
-                            top->gb->video->bgpd[42] = 0xf5;
-                            top->gb->video->bgpd[43] = 0x1a;
-                            top->gb->video->bgpd[44] = 0x2f;
-                            top->gb->video->bgpd[45] = 0x16;
-                            top->gb->video->bgpd[46] = 0x00;
-                            top->gb->video->bgpd[47] = 0x00;
-
-                            top->gb->video->bgpd[48] = 0xff;
-                            top->gb->video->bgpd[49] = 0x7f;
-                            top->gb->video->bgpd[50] = 0x08;
-                            top->gb->video->bgpd[51] = 0x7f;
-                            top->gb->video->bgpd[52] = 0xfb;
-                            top->gb->video->bgpd[53] = 0x26;
-                            top->gb->video->bgpd[54] = 0x00;
-                            top->gb->video->bgpd[55] = 0x00;
-
-                            top->gb->video->bgpd[56] = 0x9b;
-                            top->gb->video->bgpd[57] = 0x2e;
-                            top->gb->video->bgpd[58] = 0x08;
-                            top->gb->video->bgpd[59] = 0x7f;
-                            top->gb->video->bgpd[60] = 0xb4;
-                            top->gb->video->bgpd[61] = 0x11;
-                            top->gb->video->bgpd[62] = 0x00;
-                            top->gb->video->bgpd[63] = 0x00;
-
-                        //obpd
-
-                            top->gb->video->obpd[0] = 0x77;
-                            top->gb->video->obpd[1] = 0x77;
-                            top->gb->video->obpd[2] = 0x7d;
-                            top->gb->video->obpd[3] = 0x3a;
-                            top->gb->video->obpd[4] = 0x7c;
-                            top->gb->video->obpd[5] = 0x10;
-                            top->gb->video->obpd[6] = 0x00;
-                            top->gb->video->obpd[7] = 0x00;
-
-                            top->gb->video->obpd[8] = 0x77;
-                            top->gb->video->obpd[9] = 0x77;
-                            top->gb->video->obpd[10] = 0xff;
-                            top->gb->video->obpd[11] = 0x7f;
-                            top->gb->video->obpd[12] = 0xef;
-                            top->gb->video->obpd[13] = 0x3d;
-                            top->gb->video->obpd[14] = 0x00;
-                            top->gb->video->obpd[15] = 0x00;
-
-                            top->gb->video->obpd[16] = 0x77;
-                            top->gb->video->obpd[17] = 0x77;
-                            top->gb->video->obpd[18] = 0x7d;
-                            top->gb->video->obpd[19] = 0x67;
-                            top->gb->video->obpd[20] = 0xb9;
-                            top->gb->video->obpd[21] = 0x32;
-                            top->gb->video->obpd[22] = 0x00;
-                            top->gb->video->obpd[23] = 0x00;
-
-                            top->gb->video->obpd[24] = 0x77;
-                            top->gb->video->obpd[25] = 0x77;
-                            top->gb->video->obpd[26] = 0x3a;
-                            top->gb->video->obpd[27] = 0x6f;
-                            top->gb->video->obpd[28] = 0xf2;
-                            top->gb->video->obpd[29] = 0x5d;
-                            top->gb->video->obpd[30] = 0x00;
-                            top->gb->video->obpd[31] = 0x00;
-
-                            top->gb->video->obpd[32] = 0x77;
-                            top->gb->video->obpd[33] = 0x77;
-                            top->gb->video->obpd[34] = 0xff;
-                            top->gb->video->obpd[35] = 0x7f;
-                            top->gb->video->obpd[36] = 0x5e;
-                            top->gb->video->obpd[37] = 0x0b;
-                            top->gb->video->obpd[38] = 0x00;
-                            top->gb->video->obpd[39] = 0x00;
-
-                            top->gb->video->obpd[40] = 0x77;
-                            top->gb->video->obpd[41] = 0x77;
-                            top->gb->video->obpd[42] = 0xff;
-                            top->gb->video->obpd[43] = 0x7f;
-                            top->gb->video->obpd[44] = 0x3f;
-                            top->gb->video->obpd[45] = 0x02;
-                            top->gb->video->obpd[46] = 0x00;
-                            top->gb->video->obpd[47] = 0x00;
-
-                            top->gb->video->obpd[48] = 0x77;
-                            top->gb->video->obpd[49] = 0x77;
-                            top->gb->video->obpd[50] = 0x5e;
-                            top->gb->video->obpd[51] = 0x0b;
-                            top->gb->video->obpd[52] = 0xaf;
-                            top->gb->video->obpd[53] = 0x01;
-                            top->gb->video->obpd[54] = 0x00;
-                            top->gb->video->obpd[55] = 0x00;
-
-                            top->gb->video->obpd[56] = 0x77;
-                            top->gb->video->obpd[57] = 0x77;
-                            top->gb->video->obpd[58] = 0xda;
-                            top->gb->video->obpd[59] = 0x46;
-                            top->gb->video->obpd[60] = 0x37;
-                            top->gb->video->obpd[61] = 0x01;
-                            top->gb->video->obpd[62] = 0x00;
-                            top->gb->video->obpd[63] = 0x00;
+                            setGBCPalettes(top);
 
                             // dump variables into VCD file and toggle clock
                             for (clk=0; clk<2; clk++) {
