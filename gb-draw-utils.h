@@ -13,7 +13,7 @@
 SDL_Color getColor(int number,int mode, Vgb_video* video);
 void loadvram(char * fileName, CData * array) ;
 void drawBackground(SDL_Texture* background, SDL_Renderer* renderer, Vgb* top);
-void drawTileMap(SDL_Texture* tilemap, SDL_Renderer* renderer, Vgb* top);
+void drawTileMap(SDL_Texture* tilemap, SDL_Renderer* renderer, Vgb* top, int number);
 void drawSprite(SDL_Texture* sprite_texture, SDL_Renderer* renderer, Vgb_sprite* sprite,Vgb* top, bool isGBC);
 void drawLCD(SDL_Texture* tilemap, SDL_Renderer* renderer, Vgb* top, bool isGBC);
 

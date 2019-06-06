@@ -117,7 +117,7 @@ void drawBackground(SDL_Texture* background, SDL_Renderer* renderer, Vgb* top) {
 
 }
 
-void drawTileMap(SDL_Texture* tilemap, SDL_Renderer* renderer, Vgb* top) {
+void drawTileMap(SDL_Texture* tilemap, SDL_Renderer* renderer, Vgb* top, int number=0) {
 
     SDL_SetRenderTarget(renderer, tilemap);
     {
@@ -153,8 +153,10 @@ void drawTileMap(SDL_Texture* tilemap, SDL_Renderer* renderer, Vgb* top) {
 
                 //8 2bytes pairs
                 for (int i=0,pixely=0;i<8;i++,pixely+=2){
-                    uint8_t data1=top->gb->vram0_array[address+i*2];
-                    uint8_t data2=top->gb->vram0_array[address+i*2+1];
+                    uint8_t * vram_array = number?top->gb->vram1_array:top->gb->vram0_array;
+
+                    uint8_t data1=vram_array[address+i*2];
+                    uint8_t data2=vram_array[address+i*2+1];
 
                     //8 pixels per line
                     for (int j=7,pixelx=0;j>-1;j--,pixelx+=2){
