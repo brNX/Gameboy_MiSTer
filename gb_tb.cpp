@@ -155,6 +155,30 @@ void drawTileMap(SDL_Texture* tilemap, SDL_Renderer* renderer, Vgb* top) {
 
 }
 
+void drawSprite(SDL_Texture* sprite, SDL_Renderer* renderer, Vgb_sprite* sprite,Vgb* top, bool isGBC) {
+    //vram (0x8000 +(tileLocation*16))+line
+    int tilelocation = sprite->tile*16;
+    int vrambank=0;
+    int palette[4];
+    if (isGBC)
+        vrambank = (sprite->flags & 0x8)>>3;
+
+    if (isGBC) {
+        int palettenumber = sprite->flags & 0x7;
+        //TODO: fetch gbc palettes
+    }else {
+        int palettenumber = (sprite->flags & 0x10)>>4;
+        palette[0]= palettenumber?top->gb->video->obp1:top->gb->video->obp0;
+    }
+    
+
+    //TODO: finish drawing
+
+
+    
+
+}
+
 void drawLCD(SDL_Texture* tilemap, SDL_Renderer* renderer, Vgb* top, bool isGBC) {
     SDL_SetRenderTarget(renderer, tilemap);
     {
