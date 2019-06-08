@@ -247,7 +247,7 @@ wire audio_rd = !cpu_rd_n && sel_audio;
 wire audio_wr = !cpu_wr_n && sel_audio;
 wire [7:0] audio_do;
 
-gbc_snd audio (
+/*gbc_snd audio (
 	.clk				( clk2x 				),
 	.reset			( reset				),
 
@@ -259,7 +259,7 @@ gbc_snd audio (
 
    .snd_left 		( audio_l  			),
 	.snd_right  	( audio_r  			)
-);
+);*/
 
 // --------------------------------------------------------------------
 // -----------------------serial port(dummy)---------------------------
@@ -346,8 +346,8 @@ wire irq_n = !(ie_r & if_r);
 
 reg [4:0] if_r;
 reg [4:0] ie_r; // writing  $ffff sets the irq enable mask
+reg old_ack = 0;
 always @(negedge clk_cpu) begin //negedge to trigger interrupt earlier
-	reg old_ack = 0;
 	
 	if(reset) begin
 		ie_r <= 5'h00;
@@ -481,21 +481,27 @@ wire vram1_wren = video_rd?1'b0:vram_bank&&((hdma_rd&&isGBC)||cpu_wr_vram);
 wire [12:0] vram_addr = video_rd?video_addr:(hdma_rd&&isGBC)?hdma_target_addr[12:0]:(dma_rd&&dma_sel_vram)?dma_addr[12:0]:cpu_addr[12:0];
 
 
-spram #(13) vram0 (
-	.clock      ( clk_cpu               ),
-	.address    ( vram_addr             ),
-	.wren       ( vram_wren             ),
-	.data       ( vram_di               ),
-	.q          ( vram_do               )
+generic_spram #(13,8) vram0 (
+	.clk            ( clk_cpu               ),
+	.rst            ( reset                 ),
+	.ce             ( 1'b1                  ),
+	.oe             ( 1'b1                  ),
+	.addr           ( vram_addr             ),
+	.we             ( vram_wren             ),
+	.di             ( vram_di               ),
+	.dout           ( vram_do               )
 );
 
 //separate 8k for vbank1 for gbc because of BG reads
-spram #(13) vram1 (
-	.clock      ( clk_cpu               ),
-	.address    ( vram_addr             ),
-	.wren       ( vram1_wren            ),
-	.data       ( vram_di               ),
-	.q          ( vram1_do              )
+generic_spram #(13,8) vram1 (
+	.clk            ( clk_cpu               ),
+	.rst            ( reset                 ),
+	.ce             ( 1'b1                  ),
+	.oe             ( 1'b1                  ),
+	.addr           ( vram_addr             ),
+	.we             ( vram1_wren            ),
+	.di             ( vram_di               ),
+	.dout           ( vram_do               )
 );
 
 //GBC VRAM banking
@@ -545,12 +551,15 @@ hdma hdma(
 // 127 bytes internal zero page ram from $ff80 to $fffe
 wire cpu_wr_zpram = sel_zpram && !cpu_wr_n;
 wire [7:0] zpram_do;
-spram #(7) zpram (
-	.clock      ( clk_cpu        ),
-	.address    ( cpu_addr[6:0]  ),
-	.wren       ( cpu_wr_zpram   ),
-	.data       ( cpu_do         ),
-	.q          ( zpram_do       )
+generic_spram #(7,8) zpram (
+	.clk(clk_cpu),
+	.rst(reset),
+	.ce(1'b1),
+	.we(cpu_wr_zpram),
+	.oe(1'b1),
+	.addr(cpu_addr[6:0]),
+	.di(cpu_do),
+	.dout(zpram_do)
 );
 
 // --------------------------------------------------------------------
@@ -573,13 +582,17 @@ wire [14:0] iram_addr = (isGBC&&hdma_rd&&hdma_sel_iram)?               //hdma tr
 
 wire cpu_wr_iram = sel_iram && !cpu_wr_n;
 wire [7:0] iram_do;
-spram #(15) iram (
-	.clock      ( clk_cpu        ),
-	.address    ( iram_addr      ),
-	.wren       ( iram_wren      ),
-	.data       ( cpu_do         ),
-	.q          ( iram_do        )
+generic_spram #(15,8) iram (
+	.clk        ( clk_cpu        ),
+	.rst        ( reset          ),
+	.addr       ( iram_addr      ),
+	.ce         ( 1'b1           ),
+	.oe         ( 1'b1           ),
+	.we         ( iram_wren      ),
+	.di         ( cpu_do         ),
+	.dout       ( iram_do        )
 );
+
 
 //GBC WRAM banking
 always @(posedge clk_cpu) begin

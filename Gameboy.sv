@@ -28,6 +28,9 @@ module Gameboy
 	input [15:0] joystick
 );
 
+
+wire [7:0] sdram_do;
+
 // ---------------------------------------------------------------
 // ----------------------------- MBC1 ----------------------------
 // ---------------------------------------------------------------
@@ -185,18 +188,20 @@ wire [9:0] mbc_bank =
 	
 wire isGBC_game = (cart_cgb_flag == 8'h80 || cart_cgb_flag == 8'hC0);
 
+wire [23:0] cart_rom_addr = {1'b0, mbc_bank, cart_addr[12:0]};
+
+cart game_cart (
+	.clk (clk_sys),
+	.addr (cart_rom_addr),
+	.data (sdram_do)
+);
+
 reg [127:0] palette = 128'h828214517356305A5F1A3B4900000000;
 
 //TODO: e.g. output and read timer register values from mbc3 when selected 
 wire [7:0] cart_di;    // data from cpu to cart
-wire [7:0] cart_do =
-	~cart_ready ?
-		8'h00 :
-		cram_rd ? 
-			cram_do :
-			cart_addr[0] ?
-				sdram_do[15:8]:
-				sdram_do[7:0];
+wire [7:0] cart_do = cram_rd ? cram_do : sdram_do ;
+
 
 
 wire [15:0] cart_addr;
@@ -280,9 +285,8 @@ wire clk_cpu = clk_sys & ce_cpu;
 wire clk_cpu2x = clk_sys & ce_pix;
 
 reg ce_pix, ce_cpu,ce_sys;
+reg [3:0] div = 0;
 always @(negedge clk_sys) begin
-	reg [3:0] div = 0;
-
 	div <= div + 1'd1;
 	ce_sys   <= !div[0];
 	ce_pix   <= !div[2:0];
@@ -295,22 +299,10 @@ end
 wire [7:0] bios_do;
 wire [11:0] bios_addr;
 
-dpram_dif #(12,8,11,16) boot_rom_gbc (
-	.clock (clk_sys),
-	
-	.address_a (bios_addr),
-	/* verilator lint_off PINNOCONNECT */
-	.wren_a (),
-	.data_a (),
-	/* verilator lint_on PINNOCONNECT */
-	.q_a (bios_do),
-	
-	.address_b (ioctl_addr[11:1]),
-	.wren_b (ioctl_wr && bios_download),
-	.data_b (ioctl_dout),
-	/* verilator lint_off PINNOCONNECT */
-	.q_b ()
-	/* verilator lint_on PINNOCONNECT */
+gbc_boot_rom boot_rom_gbc (
+	.clk (clk_sys),
+	.addr (bios_addr),
+	.data (bios_do)
 );
 
 
@@ -352,7 +344,7 @@ end*/
 wire bk_wr = sd_buff_wr & sd_ack;
 wire [15:0] bk_data = sd_buff_dout;
 wire [15:0] bk_q;
-assign sd_buff_din = bk_q;
+assign sd_buff_din = bk_q;*/
 
 wire [7:0] cram_do =
 	mbc_ram_enable ? 
@@ -373,36 +365,30 @@ wire cram_wr = cart_wr & is_cram_addr;
 wire [16:0] cram_addr = mbc1? {2'b00,mbc1_ram_bank, cart_addr[12:0]}:
 								mbc3? {2'b00,mbc3_ram_bank, cart_addr[12:0]}:
 								mbc5?	{mbc5_ram_bank, cart_addr[12:0]}:
-								{4'd0, cart_addr[12:0]};*/
+								{4'd0, cart_addr[12:0]};
 
 // Up to 8kb * 16banks of Cart Ram (128kb)
 
-dpram #(16) cram_l (
-	.clock_a (clk_cpu2x),
-	.address_a (cram_addr[16:1]),
-	.wren_a (cram_wr & ~cram_addr[0]),
-	.data_a (cart_di),
-	.q_a (cram_q_l),
-	
-	.clock_b (clk_sys),
-	.address_b (bk_addr[15:0]),
-	.wren_b (bk_wr),
-	.data_b (bk_data[7:0]),
-	.q_b (bk_q[7:0])
+generic_spram #(16,8) cram_l (
+	.clk            ( clk_cpu2x              ),
+	.rst            ( reset                  ),
+	.ce             ( 1'b1                   ),
+	.oe             ( 1'b1                   ),
+	.addr           ( cram_addr[16:1]        ),
+	.we             ( cram_wr & ~cram_addr[0]),
+	.di             ( cart_di                ),
+	.dout           ( cram_q_l               )
 );
 
-dpram #(16) cram_h (
-	.clock_a (clk_cpu2x),
-	.address_a (cram_addr[16:1]),
-	.wren_a (cram_wr & cram_addr[0]),
-	.data_a (cart_di),
-	.q_a (cram_q_h),
-	
-	.clock_b (clk_sys),
-	.address_b (bk_addr[15:0]),
-	.wren_b (bk_wr),
-	.data_b (bk_data[15:8]),
-	.q_b (bk_q[15:8])
+generic_spram #(16,8) cram_h (
+	.clk            ( clk_cpu2x             ),
+	.rst            ( reset                 ),
+	.ce             ( 1'b1                  ),
+	.oe             ( 1'b1                  ),
+	.addr           ( cram_addr[16:1]       ),
+	.we             ( cram_wr & cram_addr[0]),
+	.di             ( cart_di               ),
+	.dout           ( cram_q_h              )
 );
 
 /*wire downloading = cart_download;
