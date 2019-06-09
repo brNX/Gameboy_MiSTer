@@ -28,7 +28,7 @@ module tv80_mcode
   MCycles, TStates, Prefix, Inc_PC, Inc_WZ, IncDec_16, Read_To_Reg, 
   Read_To_Acc, Set_BusA_To, Set_BusB_To, ALU_Op, Save_ALU, PreserveC, 
   Arith16, Set_Addr_To, IORQ, Jump, JumpE, JumpXY, Call, RstP, LDZ, 
-  LDW, LDSPHL, Special_LD, ExchangeDH, ExchangeRp, ExchangeAF, 
+  LDW, LDSPHL,LDHLSP,ADDSPdd, Special_LD, ExchangeDH, ExchangeRp, ExchangeAF, 
   ExchangeRS, I_DJNZ, I_CPL, I_CCF, I_SCF, I_RETN, I_BT, I_BC, I_BTR, 
   I_RLD, I_RRD, I_INRC, SetDI, SetEI, IMode, Halt, NoRead, Write, 
   // Inputs
@@ -80,6 +80,8 @@ module tv80_mcode
   output                LDZ                     ;
   output                LDW                     ;
   output                LDSPHL                  ;
+  output                LDHLSP                  ;
+  output                ADDSPdd                 ;
   output [2:0]          Special_LD              ; // A,I;A,R;I,A;R,A;None
   output                ExchangeDH              ;
   output                ExchangeRp              ;
@@ -128,6 +130,8 @@ module tv80_mcode
   reg                   LDZ                     ;
   reg                   LDW                     ;
   reg                   LDSPHL                  ;
+  reg                   LDHLSP                  ;
+  reg                   ADDSPdd                 ;
   reg [2:0]             Special_LD              ; // A,I;A,R;I,A;R,A;None
   reg                   ExchangeDH              ;
   reg                   ExchangeRp              ;
@@ -242,6 +246,8 @@ module tv80_mcode
       LDZ = 1'b0;
       LDW = 1'b0;
       LDSPHL = 1'b0;
+      LDHLSP = 1'b0;
+      ADDSPdd = 1'b0;
       Special_LD = 3'b000;
       ExchangeDH = 1'b0;
       ExchangeRp = 1'b0;
@@ -1605,26 +1611,13 @@ module tv80_mcode
                         2'b01  :
                           begin
                             // ADD SP,n
-                            MCycles = 3'b011;
+                            MCycles = 3'b100;
                             case (1'b1) // MCycle
-                              MCycle[1] :
-                                begin
-                                  ALU_Op = 4'b0000;
-                                  Inc_PC = 1'b1;
-                                  Read_To_Reg = 1'b1;
-                                  Save_ALU = 1'b1;
-                                  Set_BusA_To = 4'b1000;
-                                  Set_BusB_To = 4'b0110;
-                                end
                               
-                              MCycle[2] :
+                              MCycle[3] :
                                 begin
-                                  NoRead = 1'b1;
-                                  Read_To_Reg = 1'b1;
-                                  Save_ALU = 1'b1;
-                                  ALU_Op = 4'b0001;
-                                  Set_BusA_To = 4'b1001;
-                                  Set_BusB_To = 4'b1110;        // Incorrect unsigned !!!!!!!!!!!!!!!!!!!!!
+                                  Inc_PC = 1'b1;
+                                  ADDSPdd = 1'b1;
                                 end
                               
                               default :;
@@ -1650,36 +1643,25 @@ module tv80_mcode
                         
                         2'b11  :
                           begin
-                            // LD HL,SP+n       -- Not correct !!!!!!!!!!!!!!!!!!!
-                            MCycles = 3'b101;
+                            // LD HL,SP+n 
+                            MCycles = 3'b011;
                             case (1'b1) // MCycle
                               MCycle[1] :
                                 begin
                                   Inc_PC = 1'b1;
-                                  LDZ = 1'b1;
                                 end
                               
                               MCycle[2] :
                                 begin
-                                  Set_Addr_To = aZI;
+                                  LDHLSP = 1'b1;
                                   Inc_PC = 1'b1;
-                                  LDW = 1'b1;
                                 end
                               
                               MCycle[3] :
                                 begin
-                                  Set_BusA_To[2:0] = 3'b101; // L
-                                  Read_To_Reg = 1'b1;
-                                  Inc_WZ = 1'b1;
-                                  Set_Addr_To = aZI;
+                                  LDHLSP = 1'b1;
                                 end
-                              
-                              MCycle[4] :
-                                begin
-                                  Set_BusA_To[2:0] = 3'b100; // H
-                                  Read_To_Reg = 1'b1;
-                                end
-                              
+                                                            
                               default :;
                             endcase // case(MCycle)
                           end // case: 2'b11

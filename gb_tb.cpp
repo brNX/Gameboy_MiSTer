@@ -77,7 +77,7 @@ void loadRom(char * fileName, VGameboy* top) {
 
 }
 
-void setGBCPalettes(VGameboy* top){
+/*void setGBCPalettes(VGameboy* top){
     //bgpd
     top->Gameboy->gb->video->bgpd[0] = 0x6f;
     top->Gameboy->gb->video->bgpd[1] = 0xdd;
@@ -224,7 +224,7 @@ void setGBCPalettes(VGameboy* top){
     top->Gameboy->gb->video->obpd[61] = 0x01;
     top->Gameboy->gb->video->obpd[62] = 0x00;
     top->Gameboy->gb->video->obpd[63] = 0x00;
-}
+}*/
 
 void getSpriteInfo(VGameboy_sprite* sprite,char * spriteinfo){
     sprintf(spriteinfo,"X:%02X\nY:%02X\nT:%02X\nF:%02X",sprite->x_pos,sprite->y_pos,sprite->tile,sprite->flags);
@@ -304,12 +304,12 @@ int main(int argc, char **argv) {
     top->isGBC = 0;
 
 
-    loadRom("sh.gb", top);
+    loadRom("tetris.gb", top);
 
 
     top->eval ();  
 
-    SDL_TimerID my_timer_id = SDL_AddTimer(20, timerTick, NULL);
+    SDL_TimerID my_timer_id = SDL_AddTimer(18, timerTick, NULL);
 
     const int window_x = 1980;
     const int window_y = 1080;
@@ -371,7 +371,7 @@ int main(int argc, char **argv) {
                     /* and now we can call the function we wanted to call in the timer but couldn't because of the multithreading problems */
                     bool render=false;
                     if (runVerilator){
-                        for (int z = 0; z<4*(2048*4);z++){
+                        for (int z = 0; z<4*(2048*3);z++){
                             i++;
                             top->reset = (i < 2);
                             top->isGBC = isGBC;
