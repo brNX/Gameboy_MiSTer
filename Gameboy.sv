@@ -25,7 +25,8 @@ module Gameboy
 	input clk_sys,
 	input reset,
 	input isGBC,
-	input [15:0] joystick
+	input [15:0] joystick,
+	output [1:0] mode
 );
 
 
@@ -213,6 +214,8 @@ wire [14:0] lcd_data;
 wire [1:0] lcd_mode;
 wire lcd_on;
 
+assign mode = lcd_mode;
+
 //assign AUDIO_S = 0;
 
 wire speed;
@@ -279,18 +282,19 @@ lcd lcd (
 );
 
 
-wire clk_sys_old =  clk_sys & ce_sys;
+//wire clk_sys_old =  clk_sys & ce_sys;
 wire ce_cpu2x = ce_pix;
 wire clk_cpu = clk_sys & ce_cpu;
 wire clk_cpu2x = clk_sys & ce_pix;
 
 reg ce_pix, ce_cpu,ce_sys;
-reg [3:0] div = 0;
+reg [1:0] div = 0;
 always @(negedge clk_sys) begin
 	div <= div + 1'd1;
-	ce_sys   <= !div[0];
-	ce_pix   <= !div[2:0];
-	ce_cpu   <= !div[3:0];
+	ce_pix   <= !div[0];
+	ce_cpu   <= !div;
+/*	ce_pix   <= !div[2:0];
+	ce_cpu   <= !div[3:0];*/
 end
 
 

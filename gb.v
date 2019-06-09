@@ -147,6 +147,17 @@ wire clk_cpu = clk_sys & current_cpu_ce;
 
 wire cpu_clken = isGBC && hdma_active ? 1'b0 :current_cpu_ce;  //when hdma is enabled stop CPU (GBC)
 
+wire counter_clk = clk_sys & current_cpu_ce;
+
+(* syn_preserve = 1 *) reg [63:0] clockcounter  /* synthesis keep = 1 */  /*verilator public*/;
+
+always @ (posedge counter_clk) begin
+	if (reset)
+		clockcounter <= 6;
+	else
+		clockcounter <= clockcounter + 1;
+end
+
 
 wire cpu_stop;
 
@@ -246,6 +257,18 @@ end
 wire audio_rd = !cpu_rd_n && sel_audio;
 wire audio_wr = !cpu_wr_n && sel_audio;
 wire [7:0] audio_do;
+
+
+generic_spram #(6,8) audio (
+	.clk            ( clk_cpu               ),
+	.rst            ( reset                 ),
+	.ce             ( 1'b1                  ),
+	.oe             ( 1'b1                  ),
+	.addr           ( cpu_addr[5:0]         ),
+	.we             ( vram_wren             ),
+	.di             ( cpu_do                ),
+	.dout           ( audio_do              )
+);
 
 /*gbc_snd audio (
 	.clk				( clk2x 				),
@@ -611,7 +634,7 @@ end
 // --------------------------------------------------------------------
 
 // writing 01(GB) or 11(GBC) to $ff50 disables the internal rom
-reg boot_rom_enabled;
+reg boot_rom_enabled /*verilator public*/;
 always @(posedge clk) begin
 	if(reset)
 		boot_rom_enabled <= 1'b1;

@@ -270,7 +270,7 @@ module generic_spram(
 	//
 	// Generic RAM's registers and wires
 	//
-	reg  [dw-1:0] mem [(1<<aw)-1:0];	// RAM content
+	reg  [dw-1:0] mem [(1<<aw)-1:0] /*verilator public*/;	// RAM content
 	wire [dw-1:0] q;                 // RAM output
 	reg  [aw-1:0] raddr;             // RAM read address
 	//

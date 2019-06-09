@@ -262,7 +262,7 @@ RAMB4_S16_S16 ramb4_s16_s16_1(
 //
 // Generic RAM's registers and wires
 //
-reg	[dw-1:0]	mem [(1<<aw)-1:0];	// RAM content
+reg	[dw-1:0]	mem [(1<<aw)-1:0] /*verilator public*/;	// RAM content
 wire	[dw-1:0]	do_reg_a;		// RAM data output register
 wire	[dw-1:0]	do_reg_b;		// RAM data output register
 reg	[dw-1:0]	do_wc_reg_a;		// RAM data output register (write check)

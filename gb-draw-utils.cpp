@@ -6,7 +6,7 @@
 
 
 
-SDL_Color getColor(int number,int mode, Vgb_video* video){
+SDL_Color getColor(int number,int mode, VGameboy_video* video){
     SDL_Color white = {255,255,255,255};
     SDL_Color light_gray = {190,190,190,255};
     SDL_Color dark_gray = {90,90,90,255};
@@ -62,7 +62,7 @@ void loadvram(char * fileName, CData * array) {
     fclose(fileptr); // Close the file
 }
 
-void drawBackground(SDL_Texture* background, SDL_Renderer* renderer, Vgb* top) {
+void drawBackground(SDL_Texture* background, SDL_Renderer* renderer, VGameboy* top) {
 
     SDL_SetRenderTarget(renderer, background);
     {
@@ -71,7 +71,7 @@ void drawBackground(SDL_Texture* background, SDL_Renderer* renderer, Vgb* top) {
         uint16_t tileAddress;
 
         //Window Tile Map Display Select
-        if(top->gb->video->lcdc & 0x8)
+        if(top->Gameboy->gb->video->lcdc & 0x8)
             backgroundAddress=0x1C00;
         else
             backgroundAddress=0x1800;
@@ -79,30 +79,30 @@ void drawBackground(SDL_Texture* background, SDL_Renderer* renderer, Vgb* top) {
         for (int line=0,y=0;line<32;line++,y+=8){
             for (int row=0,x=0;row<32;row++,x+=8){
 
-                    if (top->gb->video->lcdc & 0x10){
+                    if (top->Gameboy->gb->video->lcdc & 0x10){
                         uint8_t tilenumber;
                         tileAddress = 0x0;
-                        tilenumber = top->gb->vram0_array[backgroundAddress];
+                        tilenumber = top->Gameboy->gb->vram0->mem[backgroundAddress];
                         tileAddress+=(tilenumber*16);
                     }
                     else{
                         int8_t tilenumber;
                         tileAddress = 0x800;
-                        tilenumber = top->gb->vram0_array[backgroundAddress];
+                        tilenumber = top->Gameboy->gb->vram0->mem[backgroundAddress];
                         tileAddress+=((tilenumber+128)*16);
                     }
 
                     //8 2bytes pairs
                     for (int i=0,pixely=0;i<8;i++,pixely++){
-                        uint8_t data1=top->gb->vram0_array[tileAddress+i*2];
-                        uint8_t data2=top->gb->vram0_array[tileAddress+i*2+1];
+                        uint8_t data1=top->Gameboy->gb->vram0->mem[tileAddress+i*2];
+                        uint8_t data2=top->Gameboy->gb->vram0->mem[tileAddress+i*2+1];
 
                         //8 pixels per line
                         for (int j=7,pixelx=0;j>-1;j--,pixelx++){
 
                             int colorNumber = (data2 & (1<<j))?0x2:0;
                             colorNumber |= (data1 & (1<<j))?1:0;
-                            SDL_Color value = getColor(colorNumber,0,top->gb->video);
+                            SDL_Color value = getColor(colorNumber,0,top->Gameboy->gb->video);
                             SDL_SetRenderDrawColor(renderer, value.r, value.g, value.b,SDL_ALPHA_OPAQUE);
                             SDL_RenderDrawPoint(renderer,x+pixelx,y+pixely);
                         }
@@ -117,7 +117,7 @@ void drawBackground(SDL_Texture* background, SDL_Renderer* renderer, Vgb* top) {
 
 }
 
-void drawTileMap(SDL_Texture* tilemap, SDL_Renderer* renderer, Vgb* top, int number=0) {
+void drawTileMap(SDL_Texture* tilemap, SDL_Renderer* renderer, VGameboy* top, int number=0) {
 
     SDL_SetRenderTarget(renderer, tilemap);
     {
@@ -153,7 +153,7 @@ void drawTileMap(SDL_Texture* tilemap, SDL_Renderer* renderer, Vgb* top, int num
 
                 //8 2bytes pairs
                 for (int i=0,pixely=0;i<8;i++,pixely+=2){
-                    uint8_t * vram_array = number?top->gb->vram1_array:top->gb->vram0_array;
+                    uint8_t * vram_array = number?top->Gameboy->gb->vram1->mem:top->Gameboy->gb->vram0->mem;
 
                     uint8_t data1=vram_array[address+i*2];
                     uint8_t data2=vram_array[address+i*2+1];
@@ -164,7 +164,7 @@ void drawTileMap(SDL_Texture* tilemap, SDL_Renderer* renderer, Vgb* top, int num
                         int colorNumber = (data2 & (1<<j))?0x2:0;
                         colorNumber |= (data1 & (1<<j))?1:0;
 
-                        SDL_Color value = getColor(colorNumber,0,top->gb->video);
+                        SDL_Color value = getColor(colorNumber,0,top->Gameboy->gb->video);
                         SDL_SetRenderDrawColor(renderer, value.r, value.g, value.b,SDL_ALPHA_OPAQUE);
                         SDL_RenderDrawPoint(renderer,x+pixelx,y+pixely);
                         SDL_RenderDrawPoint(renderer,x+pixelx+1,y+pixely);
@@ -181,7 +181,7 @@ void drawTileMap(SDL_Texture* tilemap, SDL_Renderer* renderer, Vgb* top, int num
 
 }
 
-void drawSprite(SDL_Texture* sprite_texture, SDL_Renderer* renderer, Vgb_sprite* sprite,Vgb* top, bool isGBC) {
+void drawSprite(SDL_Texture* sprite_texture, SDL_Renderer* renderer, VGameboy_sprite* sprite,VGameboy* top, bool isGBC) {
     
     SDL_SetRenderTarget(renderer, sprite_texture);
     {
@@ -202,9 +202,9 @@ void drawSprite(SDL_Texture* sprite_texture, SDL_Renderer* renderer, Vgb_sprite*
                 int index = palette_index+i*2;
 
                 
-                int r5 = top->gb->video->obpd[index]&0x1F;
-                int g5 = ((top->gb->video->obpd[index+1]&0x3)<<3) | ((top->gb->video->obpd[index]&0xE0)>>5);
-                int b5 = (top->gb->video->obpd[index+1]&0x7C)>>2;
+                int r5 = top->Gameboy->gb->video->obpd[index]&0x1F;
+                int g5 = ((top->Gameboy->gb->video->obpd[index+1]&0x3)<<3) | ((top->Gameboy->gb->video->obpd[index]&0xE0)>>5);
+                int b5 = (top->Gameboy->gb->video->obpd[index+1]&0x7C)>>2;
 
                 int r10 = (r5 * 13) + (g5 * 2) +b5;
                 int g10 = (g5 * 3) + b5;
@@ -219,7 +219,7 @@ void drawSprite(SDL_Texture* sprite_texture, SDL_Renderer* renderer, Vgb_sprite*
         }else {
             int palettenumber = (sprite->flags & 0x10)>>4;
             for (int i=0;i<4;i++){
-                palette[i]= getColor(i,palettenumber?2:1,top->gb->video);
+                palette[i]= getColor(i,palettenumber?2:1,top->Gameboy->gb->video);
             } 
         }
         
@@ -227,11 +227,11 @@ void drawSprite(SDL_Texture* sprite_texture, SDL_Renderer* renderer, Vgb_sprite*
         for (int i=0,y=0;i<8;i++,y++){
             uint8_t data1,data2;
             if (vrambank) {
-                data1=top->gb->vram1_array[tilelocation+i*2];
-                data2=top->gb->vram1_array[tilelocation+i*2+1];
+                data1=top->Gameboy->gb->vram1->mem[tilelocation+i*2];
+                data2=top->Gameboy->gb->vram1->mem[tilelocation+i*2+1];
             }else{
-                data1=top->gb->vram0_array[tilelocation+i*2];
-                data2=top->gb->vram0_array[tilelocation+i*2+1];
+                data1=top->Gameboy->gb->vram0->mem[tilelocation+i*2];
+                data2=top->Gameboy->gb->vram0->mem[tilelocation+i*2+1];
             }
 
             //8 pixels per line
@@ -257,7 +257,7 @@ void drawSprite(SDL_Texture* sprite_texture, SDL_Renderer* renderer, Vgb_sprite*
 
 }
 
-void drawLCD(SDL_Texture* tilemap, SDL_Renderer* renderer, Vgb* top, bool isGBC) {
+void drawLCD(SDL_Texture* tilemap, SDL_Renderer* renderer, VGameboy* top, bool isGBC) {
     SDL_SetRenderTarget(renderer, tilemap);
     {
         SDL_SetRenderDrawColor(renderer, 255, 255, 255,SDL_ALPHA_OPAQUE);
@@ -268,9 +268,9 @@ void drawLCD(SDL_Texture* tilemap, SDL_Renderer* renderer, Vgb* top, bool isGBC)
             for (int x=0;x<160;x++) {
 
                 if (isGBC) {
-                    int r5 = top->gb->lcd->lcd_buffer[i]&0x1F;
-                    int g5 = (top->gb->lcd->lcd_buffer[i]>>5)&0x1F;
-                    int b5 = (top->gb->lcd->lcd_buffer[i]>>10)&0x1F;
+                    int r5 = top->Gameboy->lcd->lcd_buffer[i]&0x1F;
+                    int g5 = (top->Gameboy->lcd->lcd_buffer[i]>>5)&0x1F;
+                    int b5 = (top->Gameboy->lcd->lcd_buffer[i]>>10)&0x1F;
 
                     int r10 = (r5 * 13) + (g5 * 2) +b5;
                     int g10 = (g5 * 3) + b5;
@@ -283,7 +283,7 @@ void drawLCD(SDL_Texture* tilemap, SDL_Renderer* renderer, Vgb* top, bool isGBC)
                     SDL_SetRenderDrawColor(renderer, (r10&0x1FE)>>1, (g10&0x7F)<<1,(b10&0x1FE)>>1,SDL_ALPHA_OPAQUE);
                 }else
                 {
-                    int pixel = top->gb->lcd->lcd_buffer[i];
+                    int pixel = top->Gameboy->lcd->lcd_buffer[i];
                     int  grey = (pixel==0)?252:(pixel==1)?168:(pixel==2)?96:0;
                     SDL_SetRenderDrawColor(renderer, grey, grey, grey,SDL_ALPHA_OPAQUE);
                 }

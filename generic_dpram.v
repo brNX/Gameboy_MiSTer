@@ -305,7 +305,7 @@ module generic_dpram(
 	//
 	// Generic RAM's registers and wires
 	//
-	reg	[dw-1:0]	mem [(1<<aw)-1:0];	// RAM content
+	reg	[dw-1:0]	mem [(1<<aw)-1:0] /*verilator public*/;	// RAM content
 	reg	[dw-1:0]	dout_reg;            // RAM data output register
 
 	//

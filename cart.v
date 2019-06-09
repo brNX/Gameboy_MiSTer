@@ -5,11 +5,11 @@ module cart(
 	output [7:0] data
 );
 
-reg [7:0] rom_data [8388608:0];
+reg [7:0] rom_data [8388608:0] /*verilator public*/;
 
-initial begin
+/*initial begin
     $readmemh("boot_rom.mem", rom_data);
-end
+end*/
 
 always @(posedge clk)
 begin
