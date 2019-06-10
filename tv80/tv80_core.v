@@ -35,25 +35,14 @@ module tv80_core (/*AUTOARG*/
   parameter Mode = 3;   // 0 => Z80, 1 => Fast Z80, 2 => 8080, 3 => GB
   parameter IOWait = 1; // 0 => Single cycle I/O, 1 => Std I/O cycle
   
- /*
-  parameter Flag_C = 0;
-  parameter Flag_N = 1;
-  parameter Flag_P = 2;
-  parameter Flag_X = 3;
-  parameter Flag_H = 4;
-  parameter Flag_Y = 5;
-  parameter Flag_Z = 6;
-  parameter Flag_S = 7;
-  */
-  parameter Flag_C = 4;
-  parameter Flag_N = 0;
-  parameter Flag_P = 1;
-  parameter Flag_X = 2;
-  parameter Flag_H = 5;
-  parameter Flag_Y = 6;
-  parameter Flag_Z = 7;
-  parameter Flag_S = 3;
-   
+  parameter		Flag_S = 0;
+  parameter		Flag_P = 0;
+  parameter		Flag_X = 0;
+  parameter		Flag_Y = 0;
+  parameter		Flag_C = 4;
+  parameter		Flag_H = 5;
+  parameter		Flag_N = 6;
+  parameter		Flag_Z = 7;
   
 
   input     reset_n;            
@@ -190,6 +179,7 @@ module tv80_core (/*AUTOARG*/
   wire [3:0]     Set_BusA_To;
   wire [3:0]     ALU_Op;
   wire           Save_ALU;
+  wire           Rot_Akku;
   wire           PreserveC;
   wire           Arith16;
   wire [2:0]     Set_Addr_To;
@@ -231,7 +221,7 @@ module tv80_core (/*AUTOARG*/
   reg [15:0]     ID16_B;
   reg            Oldnmi_n;
   
-  tv80_mcode #(Mode, Flag_C, Flag_N, Flag_P, Flag_X, Flag_H, Flag_Y, Flag_Z, Flag_S) i_mcode
+  tv80_mcode #(Mode) i_mcode
     (
      .IR                   (IR),
      .ISet                 (ISet),
@@ -251,6 +241,7 @@ module tv80_core (/*AUTOARG*/
      .Set_BusA_To          (Set_BusA_To),
      .ALU_Op               (ALU_Op),
      .Save_ALU             (Save_ALU),
+     .Rot_Akku             (Rot_Akku),
      .PreserveC            (PreserveC),
      .Arith16              (Arith16),
      .Set_Addr_To          (Set_Addr_To),
@@ -289,11 +280,12 @@ module tv80_core (/*AUTOARG*/
      .Write                (write)
      );
 
-  tv80_alu #(Mode, Flag_C, Flag_N, Flag_P, Flag_X, Flag_H, Flag_Y, Flag_Z, Flag_S) i_alu
+  tv80_alu #(Mode) i_alu
     (
      .Arith16              (Arith16_r),
      .Z16                  (Z16_r),
      .ALU_Op               (ALU_Op_r),
+     .Rot_Akku             (Rot_Akku),
      .IR                   (IR[5:0]),
      .ISet                 (ISet),
      .BusA                 (BusA),
@@ -937,8 +929,7 @@ module tv80_core (/*AUTOARG*/
                     5'b11011 :
                       
 					       if (Mode == 3)
-							    //F <= #1 {Save_Mux[7:4],4'd0} ;   //TODO: need to change this
-						       F <= #1 Save_Mux;
+						       F <= #1 {Save_Mux[7:4],4'd0};
 					       else
 						       F <= #1 Save_Mux;
                     default : ;

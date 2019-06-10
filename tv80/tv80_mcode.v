@@ -30,20 +30,21 @@ module tv80_mcode
   Arith16, Set_Addr_To, IORQ, Jump, JumpE, JumpXY, Call, RstP, LDZ, 
   LDW, LDSPHL,LDHLSP,ADDSPdd, Special_LD, ExchangeDH, ExchangeRp, ExchangeAF, 
   ExchangeRS, I_DJNZ, I_CPL, I_CCF, I_SCF, I_RETN, I_BT, I_BC, I_BTR, 
-  I_RLD, I_RRD, I_INRC, SetDI, SetEI, IMode, Halt, NoRead, Write, 
+  I_RLD, I_RRD, I_INRC, SetDI, SetEI, IMode, Halt, NoRead, Write,Rot_Akku,
   // Inputs
   IR, ISet, MCycle, F, NMICycle, IntCycle
   );
   
   parameter             Mode   = 3;
-  parameter             Flag_C = 0;
-  parameter             Flag_N = 1;
-  parameter             Flag_P = 2;
-  parameter             Flag_X = 3;
-  parameter             Flag_H = 4;
-  parameter             Flag_Y = 5;
-  parameter             Flag_Z = 6;
-  parameter             Flag_S = 7;
+  
+  parameter		Flag_S = 0;
+  parameter		Flag_P = 0;
+  parameter		Flag_X = 0;
+  parameter		Flag_Y = 0;
+  parameter		Flag_C = 4;
+  parameter		Flag_H = 5;
+  parameter		Flag_N = 6;
+  parameter		Flag_Z = 7;
   
   parameter             Flag_GB_C = 4;
   parameter             Flag_GB_H = 5;
@@ -68,6 +69,7 @@ module tv80_mcode
   output [3:0]          Set_BusB_To     ; // B,C,D,E,H,L,DI,A,SP(L),SP(M),1,F,PC(L),PC(M),0
   output [3:0]          ALU_Op                  ;
   output                Save_ALU                ;
+  output                Rot_Akku                ;
   output                PreserveC               ;
   output                Arith16                 ;
   output [2:0]          Set_Addr_To             ; // aNone,aXY,aIOA,aSP,aBC,aDE,aZI
@@ -118,6 +120,7 @@ module tv80_mcode
   reg [3:0]             Set_BusB_To     ; // B,C,D,E,H,L,DI,A,SP(L),SP(M),1,F,PC(L),PC(M),0
   reg [3:0]             ALU_Op                  ;
   reg                   Save_ALU                ;
+  reg                   Rot_Akku                ;
   reg                   PreserveC               ;
   reg                   Arith16                 ;
   reg [2:0]             Set_Addr_To             ; // aNone,aXY,aIOA,aSP,aBC,aDE,aZI
@@ -234,6 +237,7 @@ module tv80_mcode
       Set_BusA_To = 4'b0000;
       ALU_Op = { 1'b0, IR[5:3] };
       Save_ALU = 1'b0;
+      Rot_Akku = 1'b0;
       PreserveC = 1'b0;
       Arith16 = 1'b0;
       IORQ = 1'b0;
@@ -1243,6 +1247,7 @@ module tv80_mcode
                       Set_BusA_To[2:0] = 3'b111;
                       ALU_Op = 4'b1000;
                       Read_To_Reg = 1'b1;
+                      Rot_Akku = 1'b1;
                       Save_ALU = 1'b1;
                     end // case: 8'b00000111,...
               

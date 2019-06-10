@@ -304,12 +304,12 @@ int main(int argc, char **argv) {
     top->isGBC = 0;
 
 
-    loadRom("tetris.gb", top);
+    loadRom("roms/sh.gb", top);
 
 
     top->eval ();  
 
-    SDL_TimerID my_timer_id = SDL_AddTimer(18, timerTick, NULL);
+    //SDL_TimerID my_timer_id = SDL_AddTimer(18, timerTick, NULL);
 
     const int window_x = 1980;
     const int window_y = 1080;
@@ -412,6 +412,47 @@ int main(int argc, char **argv) {
             }
         }
 
+
+        bool render=false;
+
+        for (int z = 0; z<4*(2048*3);z++){
+            i++;
+            top->reset = (i < 2);
+            top->isGBC = isGBC;
+
+            //setGBCPalettes(top);
+            // dump variables into VCD file and toggle clock
+            for (clk=0; clk<2; clk++) {
+                #ifndef DISABLE_TRACE
+                tfp->dump (2*i+clk);
+                #endif
+                top->clk_sys = !top->clk_sys;
+                top->eval ();
+                lcd_mode_old = lcd_mode;
+                lcd_mode = top->mode;
+
+                if ((lcd_mode == 1) && (lcd_mode_old!=1)) {
+                    render=true;
+                }
+
+            }
+
+
+        }
+        if (Verilated::gotFinish()) run = false;
+        
+        if (render) { //draw things 1 time
+            drawBackground(background,renderer,top);
+            drawTileMap(tilemap,renderer,top,0);
+            //drawTileMap(tilemap2,renderer,top,1);
+            drawLCD(lcd,renderer,top,isGBC);
+            for (int i=0;i<40;i++){
+                drawSprite(sprites[i],renderer,sprites_array[i],top,isGBC);
+            }
+        }
+
+
+
         int mouseX, mouseY;
         const int buttons = SDL_GetMouseState(&mouseX, &mouseY);
 
@@ -444,7 +485,7 @@ int main(int argc, char **argv) {
         ImGui::Image(lcd, ImVec2(160*3, 144*3));
         ImGui::End();
 
-        ImGui::Begin("Sprites");
+        /*ImGui::Begin("Sprites");
         ImGui::BeginGroup();
         int sprite=0;
         for (int row =0; row<5;row++){
@@ -517,7 +558,7 @@ int main(int argc, char **argv) {
         ImGui::NewLine();
         ImGui::LabelText("Sprite","%d",spriteinfo);
         ImGui::EndGroup();
-        ImGui::End();
+        ImGui::End();*/
 
 
         ImGui::Begin("GB Config");

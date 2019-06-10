@@ -26,22 +26,24 @@ module tv80_alu (/*AUTOARG*/
   // Outputs
   Q, F_Out, 
   // Inputs
-  Arith16, Z16, ALU_Op, IR, ISet, BusA, BusB, F_In
+  Arith16, Z16, ALU_Op, IR, ISet, BusA, BusB, F_In, Rot_Akku
   );
 
   parameter		Mode   = 3;
-  parameter		Flag_C = 0;
-  parameter		Flag_N = 1;
-  parameter		Flag_P = 2;
-  parameter		Flag_X = 3;
-  parameter		Flag_H = 4;
-  parameter		Flag_Y = 5;
-  parameter		Flag_Z = 6;
-  parameter		Flag_S = 7;
+  
+  parameter		Flag_S = 0;
+  parameter		Flag_P = 0;
+  parameter		Flag_X = 0;
+  parameter		Flag_Y = 0;
+  parameter		Flag_C = 4;
+  parameter		Flag_H = 5;
+  parameter		Flag_N = 6;
+  parameter		Flag_Z = 7;
 
   input 		Arith16;
   input 		Z16;
   input [3:0]           ALU_Op ;
+  input                 Rot_Akku;
   input [5:0]           IR;
   input [1:0]           ISet;
   input [7:0]           BusA;
@@ -118,7 +120,7 @@ module tv80_alu (/*AUTOARG*/
   
   always @ (/*AUTOSENSE*/ALU_Op or Arith16 or BitMask or BusA or BusB
 	    or Carry_v or F_In or HalfCarry_v or IR or ISet
-	    or OverFlow_v or Q_v or Z16)
+	    or OverFlow_v or Q_v or Z16 or Rot_Akku)
     begin
       Q_t = 8'hxx;
       DAA_Q = {9{1'bx}};
@@ -211,69 +213,52 @@ module tv80_alu (/*AUTOARG*/
           end // case: 4'b0000, 4'b0001,  4'b0010, 4'b0011, 4'b0100, 4'b0101, 4'b0110, 4'b0111
         
 	4'b1100 :
-          begin
-	    // DAA
-	    F_Out[Flag_H] = F_In[Flag_H];
-	    F_Out[Flag_C] = F_In[Flag_C];
-	    DAA_Q[7:0] = BusA;
-	    DAA_Q[8] = 1'b0;
-	    if (F_In[Flag_N] == 1'b0 ) 
-              begin
-		// After addition
-		// Alow > 9 || H == 1
-		if (DAA_Q[3:0] > 9 || F_In[Flag_H] == 1'b1 ) 
-                  begin
-		    if ((DAA_Q[3:0] > 9) ) 
-                      begin
-			F_Out[Flag_H] = 1'b1;
-		      end 
-                    else 
-                      begin
-			F_Out[Flag_H] = 1'b0;
-		      end
-		    DAA_Q = DAA_Q + 9'd6;
-		  end // if (DAA_Q[3:0] > 9 || F_In[Flag_H] == 1'b1 )
-                
-		// new Ahigh > 9 || C == 1
-		if (DAA_Q[8:4] > 9 || F_In[Flag_C] == 1'b1 ) 
-                  begin
-		    DAA_Q = DAA_Q + 9'd96; // 0x60
-		  end
-	      end 
-            else 
-              begin
-		// After subtraction
-		if (DAA_Q[3:0] > 9 || F_In[Flag_H] == 1'b1 ) 
-                  begin
-		    if (DAA_Q[3:0] > 5 ) 
-                      begin
-			F_Out[Flag_H] = 1'b0;
-		      end
-		    DAA_Q[7:0] = DAA_Q[7:0] - 8'd6;
-		  end
-		if (BusA > 153 || F_In[Flag_C] == 1'b1 ) 
-                  begin
-		    DAA_Q = DAA_Q - 9'd352; // 0x160
-		  end
-	      end // else: !if(F_In[Flag_N] == 1'b0 )
-            
-	    F_Out[Flag_X] = DAA_Q[3];
-	    F_Out[Flag_Y] = DAA_Q[5];
-	    F_Out[Flag_C] = F_In[Flag_C] || DAA_Q[8];
-	    Q_t = DAA_Q[7:0];
-            
-	    if (DAA_Q[7:0] == 8'b00000000 ) 
-              begin
-		F_Out[Flag_Z] = 1'b1;
-	      end 
-            else 
-              begin
-		F_Out[Flag_Z] = 1'b0;
-	      end
-            
-	    F_Out[Flag_S] = DAA_Q[7];
-	    F_Out[Flag_P] = ~ (^DAA_Q);
-          end // case: 4'b1100
+	begin
+		// DAA
+		F_Out[Flag_H] = 1'b0;
+		F_Out[Flag_C] = F_In[Flag_C];
+		DAA_Q[7:0] = BusA;
+		DAA_Q[8] = 1'b0;
+		if (F_In[Flag_N] == 1'b0 ) begin
+			// After addition
+			// Alow > 9 || H == 1
+			if (DAA_Q[3:0] > 9 || F_In[Flag_H] == 1'b1 ) 
+				DAA_Q = DAA_Q + 6;
+
+			// new Ahigh > 9 || C == 1
+			if (DAA_Q[8:4] > 9 || F_In[Flag_C] == 1'b1 ) 
+				DAA_Q = DAA_Q + 96; // 0x60
+		end 
+		else begin
+			// After subtraction
+			if (F_In[Flag_H] == 1'b1 ) 
+			begin
+				DAA_Q = DAA_Q - 6;
+				if (F_In[Flag_C] == 1'b0)
+					DAA_Q[8] = 1'b0; 
+			end
+
+			if (F_In[Flag_C] == 1'b1 ) 
+				DAA_Q = DAA_Q - 96; // 0x60
+		end 
+			
+				
+		F_Out[Flag_X] = DAA_Q[3];
+		F_Out[Flag_Y] = DAA_Q[5];
+		F_Out[Flag_C] = F_In[Flag_C] || DAA_Q[8];
+		Q_t = DAA_Q[7:0];
+			
+		if (DAA_Q[7:0] == 8'b00000000 ) begin
+			F_Out[Flag_Z] = 1'b1;
+		end 
+		else begin
+			F_Out[Flag_Z] = 1'b0;
+		end
+			
+		F_Out[Flag_S] = DAA_Q[7];
+		F_Out[Flag_P] = ~ (^DAA_Q);
+
+    end // case: 4'b1100
         
 	4'b1101, 4'b1110 :
           begin
@@ -428,7 +413,11 @@ module tv80_alu (/*AUTOARG*/
 		F_Out[Flag_S] = F_In[Flag_S];
 		F_Out[Flag_Z] = F_In[Flag_Z];
 	      end
-          end // case: 4'b1000
+
+		if (Mode == 3  && Rot_Akku == 1'b1)
+			F_Out[Flag_Z] = 1'b0;
+
+        end // case: 4'b1000
         
         
 	default :
