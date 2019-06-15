@@ -634,53 +634,104 @@ module tv80_mcode
               8'b11111001  :
                 begin
                   // LD SP,HL
-                  TStates = 3'b110;
-                  LDSPHL = 1'b1;
+                  if (Mode == 3) begin
+                    MCycles <= 3'b010;
+                    if (MCycle == 3'b010)
+                      LDSPHL = 1'b1;
+                  end
+                  else begin
+                    TStates = 3'b110;
+                    LDSPHL = 1'b1;
+                  end
                 end
               
               8'b11zz0101 :
                 begin
                   // PUSH qq
-                  MCycles = 3'b011;
-                  case (1'b1) // MCycle                    
-                    MCycle[0] :
-                      begin
-                        TStates = 3'b101;
-                        IncDec_16 = 4'b1111;
-                        Set_Addr_To = aSP;
-                        if (DPAIR == 2'b11 ) 
-                          begin
-                            Set_BusB_To = 4'b0111;
-                          end 
-                        else
-                          begin
-                            Set_BusB_To[2:1] = DPAIR;
-                            Set_BusB_To[0] = 1'b0;
-                            Set_BusB_To[3] = 1'b0;
-                          end
-                      end // case: 1
-                    
-                    MCycle[1] :
-                      begin
-                        IncDec_16 = 4'b1111;
-                        Set_Addr_To = aSP;
-                        if (DPAIR == 2'b11 ) 
-                          begin
-                            Set_BusB_To = 4'b1011;
-                          end 
-                        else 
-                          begin
-                            Set_BusB_To[2:1] = DPAIR;
-                            Set_BusB_To[0] = 1'b1;
-                            Set_BusB_To[3] = 1'b0;
-                          end
+                  if (Mode == 3) begin
+                    MCycles = 3'b100;
+                    case (1'b1) // MCycle                    
+                      MCycle[1] :
+                        begin
+                          TStates = 3'b101;
+                          IncDec_16 = 4'b1111;
+                          Set_Addr_To = aSP;
+                          if (DPAIR == 2'b11 ) 
+                            begin
+                              Set_BusB_To = 4'b0111;
+                            end 
+                          else
+                            begin
+                              Set_BusB_To[2:1] = DPAIR;
+                              Set_BusB_To[0] = 1'b0;
+                              Set_BusB_To[3] = 1'b0;
+                            end
+                        end // case: 1
+                      
+                      MCycle[2] :
+                        begin
+                          IncDec_16 = 4'b1111;
+                          Set_Addr_To = aSP;
+                          if (DPAIR == 2'b11 ) 
+                            begin
+                              Set_BusB_To = 4'b1011;
+                            end 
+                          else 
+                            begin
+                              Set_BusB_To[2:1] = DPAIR;
+                              Set_BusB_To[0] = 1'b1;
+                              Set_BusB_To[3] = 1'b0;
+                            end
+                          Write = 1'b1;
+                        end // case: 2
+                      
+                      MCycle[3] :
                         Write = 1'b1;
-                      end // case: 2
-                    
-                    MCycle[2] :
-                      Write = 1'b1;
-                    default :;
-                  endcase // case(MCycle)
+                      default :;
+                    endcase // case(MCycle)
+                  end
+                  else begin
+                    MCycles = 3'b011;
+                    case (1'b1) // MCycle                    
+                      MCycle[0] :
+                        begin
+                          TStates = 3'b101;
+                          IncDec_16 = 4'b1111;
+                          Set_Addr_To = aSP;
+                          if (DPAIR == 2'b11 ) 
+                            begin
+                              Set_BusB_To = 4'b0111;
+                            end 
+                          else
+                            begin
+                              Set_BusB_To[2:1] = DPAIR;
+                              Set_BusB_To[0] = 1'b0;
+                              Set_BusB_To[3] = 1'b0;
+                            end
+                        end // case: 1
+                      
+                      MCycle[1] :
+                        begin
+                          IncDec_16 = 4'b1111;
+                          Set_Addr_To = aSP;
+                          if (DPAIR == 2'b11 ) 
+                            begin
+                              Set_BusB_To = 4'b1011;
+                            end 
+                          else 
+                            begin
+                              Set_BusB_To[2:1] = DPAIR;
+                              Set_BusB_To[0] = 1'b1;
+                              Set_BusB_To[3] = 1'b0;
+                            end
+                          Write = 1'b1;
+                        end // case: 2
+                      
+                      MCycle[2] :
+                        Write = 1'b1;
+                      default :;
+                    endcase // case(MCycle)
+                  end
                 end // case: 8'b11000101,8'b11010101,8'b11100101,8'b11110101
               
               8'b11zz0001 :
@@ -782,7 +833,7 @@ module tv80_mcode
                   if (Mode == 3 ) 
                     begin
                       // RETI
-                      MCycles = 3'b011;
+                      MCycles = 3'b100;
                       case (1'b1) // MCycle
                         MCycle[0] :
                           Set_Addr_To = aSP;
@@ -1174,64 +1225,136 @@ module tv80_mcode
               8'b00zz1001  :
                 begin
                   // ADD HL,ss
-                  MCycles = 3'b011;
-                  case (1'b1) // MCycle
-                    MCycle[1] :
-                      begin
-                        NoRead = 1'b1;
-                        ALU_Op = 4'b0000;
-                        Read_To_Reg = 1'b1;
-                        Save_ALU = 1'b1;
-                        Set_BusA_To[2:0] = 3'b101;
-                        case (IR[5:4])
-                          0,1,2  :
-                            begin
-                              Set_BusB_To[2:1] = IR[5:4];
-                              Set_BusB_To[0] = 1'b1;
-                            end
+                  if (Mode == 3 ) begin
+                    MCycles = 3'b010;
+                    case (1'b1) // MCycle
+                      MCycle[0] :
+                        begin
+                          NoRead = 1'b1;
+                          ALU_Op = 4'b0000;
+                          Read_To_Reg = 1'b1;
+                          Save_ALU = 1'b1;
+                          Set_BusA_To[2:0] = 3'b101;
+                          case (IR[5:4])
+                            0,1,2  :
+                              begin
+                                Set_BusB_To[2:1] = IR[5:4];
+                                Set_BusB_To[0] = 1'b1;
+                              end
+                            
+                            default :
+                              Set_BusB_To = 4'b1000;
+                          endcase // case(IR[5:4])
                           
-                          default :
-                            Set_BusB_To = 4'b1000;
-                        endcase // case(IR[5:4])
-                        
-                        TStates = 3'b100;
-                        Arith16 = 1'b1;
-                      end // case: 2
-                    
-                    MCycle[2] :
-                      begin
-                        NoRead = 1'b1;
-                        Read_To_Reg = 1'b1;
-                        Save_ALU = 1'b1;
-                        ALU_Op = 4'b0001;
-                        Set_BusA_To[2:0] = 3'b100;
-                        case (IR[5:4])
-                          0,1,2  :
-                            Set_BusB_To[2:1] = IR[5:4];
-                          default :
-                            Set_BusB_To = 4'b1001;
-                        endcase
-                        Arith16 = 1'b1;
-                      end // case: 3
-                    
-                    default :;
-                  endcase // case(MCycle)
+                          TStates = 3'b100;
+                          Arith16 = 1'b1;
+                        end // case: 2
+                      
+                      MCycle[1] :
+                        begin
+                          NoRead = 1'b1;
+                          Read_To_Reg = 1'b1;
+                          Save_ALU = 1'b1;
+                          ALU_Op = 4'b0001;
+                          Set_BusA_To[2:0] = 3'b100;
+                          case (IR[5:4])
+                            0,1,2  :
+                              Set_BusB_To[2:1] = IR[5:4];
+                            default :
+                              Set_BusB_To = 4'b1001;
+                          endcase
+                          Arith16 = 1'b1;
+                        end // case: 3
+                      
+                      default :;
+                    endcase // case(MCycle)
+                  end 
+                  else begin
+                    MCycles = 3'b011;
+                    case (1'b1) // MCycle
+                      MCycle[1] :
+                        begin
+                          NoRead = 1'b1;
+                          ALU_Op = 4'b0000;
+                          Read_To_Reg = 1'b1;
+                          Save_ALU = 1'b1;
+                          Set_BusA_To[2:0] = 3'b101;
+                          case (IR[5:4])
+                            0,1,2  :
+                              begin
+                                Set_BusB_To[2:1] = IR[5:4];
+                                Set_BusB_To[0] = 1'b1;
+                              end
+                            
+                            default :
+                              Set_BusB_To = 4'b1000;
+                          endcase // case(IR[5:4])
+                          
+                          TStates = 3'b100;
+                          Arith16 = 1'b1;
+                        end // case: 2
+                      
+                      MCycle[2] :
+                        begin
+                          NoRead = 1'b1;
+                          Read_To_Reg = 1'b1;
+                          Save_ALU = 1'b1;
+                          ALU_Op = 4'b0001;
+                          Set_BusA_To[2:0] = 3'b100;
+                          case (IR[5:4])
+                            0,1,2  :
+                              Set_BusB_To[2:1] = IR[5:4];
+                            default :
+                              Set_BusB_To = 4'b1001;
+                          endcase
+                          Arith16 = 1'b1;
+                        end // case: 3
+                      
+                      default :;
+                    endcase // case(MCycle)
+                  end
                 end // case: 8'b00001001,8'b00011001,8'b00101001,8'b00111001              
               
               8'b00zz0011 :
                 begin
                   // INC ss
-                  TStates = 3'b110;
-                  IncDec_16[3:2] = 2'b01;
-                  IncDec_16[1:0] = DPAIR;
+                  if (Mode == 3 ) begin
+                    MCycles = 3'b010;
+                    case (1'b1) // MCycle
+                      MCycle[1] :
+                      begin
+                        IncDec_16[3:2] = 2'b01;
+                        IncDec_16[1:0] = DPAIR;
+                      end
+                      default :;
+                    endcase
+                  end
+                  else begin
+                    TStates = 3'b110;
+                    IncDec_16[3:2] = 2'b01;
+                    IncDec_16[1:0] = DPAIR;
+                  end
                 end
               
               8'b00zz1011 :
                 begin
                   // DEC ss
-                  TStates = 3'b110;
-                  IncDec_16[3:2] = 2'b11;
-                  IncDec_16[1:0] = DPAIR;
+                  if (Mode == 3 ) begin
+                    MCycles = 3'b010;
+                    case (1'b1) // MCycle
+                      MCycle[1] :
+                      begin
+                        IncDec_16[3:2] = 2'b11;
+                        IncDec_16[1:0] = DPAIR;
+                      end
+                      default :;
+                    endcase
+                  end
+                  else begin
+                    TStates = 3'b110;
+                    IncDec_16[3:2] = 2'b11;
+                    IncDec_16[1:0] = DPAIR;
+                  end
                 end
 
               // ROTATE AND SHIFT GROUP
@@ -1247,7 +1370,7 @@ module tv80_mcode
                       Set_BusA_To[2:0] = 3'b111;
                       ALU_Op = 4'b1000;
                       Read_To_Reg = 1'b1;
-                      Rot_Akku = 1'b1;
+                      if (Mode == 3 ) Rot_Akku = 1'b1;
                       Save_ALU = 1'b1;
                     end // case: 8'b00000111,...
               
@@ -1256,7 +1379,11 @@ module tv80_mcode
               8'b11000011  :
                 begin
                   // JP nn
-                  MCycles = 3'b011;
+                  if (Mode == 3 )
+                    MCycles = 3'b100;
+                  else 
+                    MCycles = 3'b011;
+
                   if (MCycle[1])
                     begin
                       Inc_PC = 1'b1;
@@ -1267,8 +1394,7 @@ module tv80_mcode
                     begin
                       Inc_PC = 1'b1;
                       Jump = 1'b1;
-                    end
-                  
+                    end                 
                 end // case: 8'b11000011
               
               8'b11zzz010  :
@@ -1285,7 +1411,7 @@ module tv80_mcode
                                 begin
                                   Set_Addr_To = aBC;
                                   Set_BusB_To   = 4'b0111;
-											 IORQ = 1'b1;  //CHANGED
+                                  IORQ = 1'b1;  //CHANGED
                                 end
                               MCycle[1] :
                                 begin
@@ -1327,10 +1453,10 @@ module tv80_mcode
                             MCycles = 3'b010;
                             case (1'b1) // MCycle
                               MCycle[0] :
-										  begin
+                              begin
                                   Set_Addr_To = aBC;
-										    IORQ = 1'b1;  //CHANGED
-										  end
+                                  IORQ = 1'b1;  //CHANGED
+                              end
                               MCycle[1] :
                                 begin
                                   Read_To_Acc = 1'b1;
@@ -1365,7 +1491,10 @@ module tv80_mcode
                   else 
                     begin
                       // JP cc,nn
-                      MCycles = 3'b011;
+                      if (Mode == 3 )
+                        MCycles = 3'b100;
+                      else 
+                        MCycles = 3'b011;
                       case (1'b1) // MCycle
                         MCycle[1] :
                           begin
@@ -1379,8 +1508,9 @@ module tv80_mcode
                               begin
                                 Jump = 1'b1;
                               end
+                            else if (Mode == 3 )
+                                MCycles = 3'b011;
                           end
-                        
                         default :;
                       endcase
                     end // else: !if(DPAIR == 2'b11 )
@@ -1482,7 +1612,10 @@ module tv80_mcode
               8'b11001101  :
                 begin
                   // CALL nn
-                  MCycles = 3'b101;
+                  if (Mode == 3 ) 
+                    MCycles = 3'b110;
+                  else
+                    MCycles = 3'b101;
                   case (1'b1) // MCycle
                     MCycle[1] :
                       begin
@@ -1519,7 +1652,10 @@ module tv80_mcode
                   if (IR[5] == 1'b0 || Mode != 3 ) 
                     begin
                       // CALL cc,nn
-                      MCycles = 3'b101;
+                      if (Mode == 3 ) 
+                        MCycles = 3'b110;
+                      else
+                        MCycles = 3'b101;
                       case (1'b1) // MCycle
                         MCycle[1] :
                           begin
@@ -1565,29 +1701,55 @@ module tv80_mcode
               8'b11001001  :
                 begin
                   // RET
-                  MCycles = 3'b011;
-                  case (1'b1) // MCycle
-                    MCycle[0] :
-                      begin
-                        TStates = 3'b101;
-                        Set_Addr_To = aSP;
-                      end
-                    
-                    MCycle[1] :
-                      begin
-                        IncDec_16 = 4'b0111;
-                        Set_Addr_To = aSP;
-                        LDZ = 1'b1;
-                      end
-                    
-                    MCycle[2] :
-                      begin
-                        Jump = 1'b1;
-                        IncDec_16 = 4'b0111;
-                      end
-                    
-                    default :;
-                  endcase // case(MCycle)
+                  if (Mode == 3 ) begin
+                    MCycles = 3'b100;
+                    case (1'b1) // MCycle
+                      MCycle[1] :
+                        begin
+                          Set_Addr_To = aSP;
+                        end
+                      
+                      MCycle[2] :
+                        begin
+                          IncDec_16 = 4'b0111;
+                          Set_Addr_To = aSP;
+                          LDZ = 1'b1;
+                        end
+                      
+                      MCycle[3] :
+                        begin
+                          Jump = 1'b1;
+                          IncDec_16 = 4'b0111;
+                        end
+                      
+                      default :;
+                    endcase // case(MCycle)
+                  end
+                  else begin
+                    MCycles = 3'b011;
+                    case (1'b1) // MCycle
+                      MCycle[0] :
+                        begin
+                          TStates = 3'b101;
+                          Set_Addr_To = aSP;
+                        end
+                      
+                      MCycle[1] :
+                        begin
+                          IncDec_16 = 4'b0111;
+                          Set_Addr_To = aSP;
+                          LDZ = 1'b1;
+                        end
+                      
+                      MCycle[2] :
+                        begin
+                          Jump = 1'b1;
+                          IncDec_16 = 4'b0111;
+                        end
+                      
+                      default :;
+                    endcase // case(MCycle)
+                  end
                 end // case: 8'b11001001
               
               8'b11000000,8'b11001000,8'b11010000,8'b11011000,8'b11100000,8'b11101000,8'b11110000,8'b11111000  :
@@ -1677,66 +1839,128 @@ module tv80_mcode
                   else 
                     begin
                       // RET cc
-                      MCycles = 3'b011;
-                      case (1'b1) // MCycle
-                        MCycle[0] :
-                          begin
-                            if (is_cc_true(F, IR[5:3]) )                              
-                              begin
-                                Set_Addr_To = aSP;
-                              end 
-                            else 
-                              begin
-                                MCycles = 3'b001;
-                              end
-                            TStates = 3'b101;
-                          end // case: 1
-                        
-                        MCycle[1] :
-                          begin
-                            IncDec_16 = 4'b0111;
-                            Set_Addr_To = aSP;
-                            LDZ = 1'b1;
-                          end
-                        MCycle[2] :
-                          begin
-                            Jump = 1'b1;
-                            IncDec_16 = 4'b0111;
-                          end
-                        default :;
-                      endcase
+                      if (Mode == 3) begin
+                        MCycles = 3'b101;
+                        case (1'b1) // MCycle
+                          MCycle[1] :
+                            begin
+                              if (is_cc_true(F, IR[5:3]) )                              
+                                begin
+                                  Set_Addr_To = aSP;
+                                end 
+                              else 
+                                begin
+                                  MCycles = 3'b010;
+                                end
+                              TStates = 3'b101;
+                            end // case: 1
+                          
+                          MCycle[2] :
+                            begin
+                              IncDec_16 = 4'b0111;
+                              Set_Addr_To = aSP;
+                              LDZ = 1'b1;
+                            end
+                          MCycle[3] :
+                            begin
+                              Jump = 1'b1;
+                              IncDec_16 = 4'b0111;
+                            end
+                          default :;
+                        endcase
+                      end
+                      else begin
+                        MCycles = 3'b011;
+                        case (1'b1) // MCycle
+                          MCycle[0] :
+                            begin
+                              if (is_cc_true(F, IR[5:3]) )                              
+                                begin
+                                  Set_Addr_To = aSP;
+                                end 
+                              else 
+                                begin
+                                  MCycles = 3'b001;
+                                end
+                              TStates = 3'b101;
+                            end // case: 1
+                          
+                          MCycle[1] :
+                            begin
+                              IncDec_16 = 4'b0111;
+                              Set_Addr_To = aSP;
+                              LDZ = 1'b1;
+                            end
+                          MCycle[2] :
+                            begin
+                              Jump = 1'b1;
+                              IncDec_16 = 4'b0111;
+                            end
+                          default :;
+                        endcase
+                      end
                     end // else: !if(IR[5] == 1'b1 && Mode == 3 )
                 end // case: 8'b11000000,8'b11001000,8'b11010000,8'b11011000,8'b11100000,8'b11101000,8'b11110000,8'b11111000
               
               8'b11000111,8'b11001111,8'b11010111,8'b11011111,8'b11100111,8'b11101111,8'b11110111,8'b11111111  :
                 begin
                   // RST p
-                  MCycles = 3'b011;
-                  case (1'b1) // MCycle
-                    MCycle[0] :
-                      begin
-                        TStates = 3'b101;
-                        IncDec_16 = 4'b1111;
-                        Set_Addr_To = aSP;
-                        Set_BusB_To = 4'b1101;
-                      end
-                    
-                    MCycle[1] :
-                      begin
-                        Write = 1'b1;
-                        IncDec_16 = 4'b1111;
-                        Set_Addr_To = aSP;
-                        Set_BusB_To = 4'b1100;
-                      end
-                    
-                    MCycle[2] :
-                      begin
-                        Write = 1'b1;
-                        RstP = 1'b1;
-                      end
-                    
-                    default :;
-                  endcase // case(MCycle)
+                  if (Mode == 3) begin
+                    MCycles = 3'b100;
+                    case (1'b1) // MCycle
+                      MCycle[1] :
+                        begin
+                          TStates = 3'b101;
+                          IncDec_16 = 4'b1111;
+                          Set_Addr_To = aSP;
+                          Set_BusB_To = 4'b1101;
+                        end
+                      
+                      MCycle[2] :
+                        begin
+                          Write = 1'b1;
+                          IncDec_16 = 4'b1111;
+                          Set_Addr_To = aSP;
+                          Set_BusB_To = 4'b1100;
+                        end
+                      
+                      MCycle[3] :
+                        begin
+                          Write = 1'b1;
+                          RstP = 1'b1;
+                        end
+                      
+                      default :;
+                    endcase // case(MCycle)
+                  end
+                  else begin
+                    MCycles = 3'b011;
+                    case (1'b1) // MCycle
+                      MCycle[0] :
+                        begin
+                          TStates = 3'b101;
+                          IncDec_16 = 4'b1111;
+                          Set_Addr_To = aSP;
+                          Set_BusB_To = 4'b1101;
+                        end
+                      
+                      MCycle[1] :
+                        begin
+                          Write = 1'b1;
+                          IncDec_16 = 4'b1111;
+                          Set_Addr_To = aSP;
+                          Set_BusB_To = 4'b1100;
+                        end
+                      
+                      MCycle[2] :
+                        begin
+                          Write = 1'b1;
+                          RstP = 1'b1;
+                        end
+                      
+                      default :;
+                    endcase // case(MCycle)
+                  end
                 end // case: 8'b11000111,8'b11001111,8'b11010111,8'b11011111,8'b11100111,8'b11101111,8'b11110111,8'b11111111
               
               // INPUT AND OUTPUT GROUP
