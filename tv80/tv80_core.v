@@ -220,6 +220,7 @@ module tv80_core (/*AUTOARG*/
   reg [15:0]     SP16, SP16_A, SP16_B;
   reg [15:0]     ID16_B;
   reg            Oldnmi_n;
+
   
   tv80_mcode #(Mode) i_mcode
     (
@@ -429,7 +430,7 @@ module tv80_core (/*AUTOARG*/
 
               mcycles <= #1 mcycles_d;
 
-              if (LDHLSP == 1'b1 && mcycle[3] && tstate[1])
+              if (LDHLSP && mcycle[2] && tstate[1])
               begin
                 F[Flag_Z] <= 1'b0;	
                 F[Flag_N] <= 1'b0;
@@ -437,7 +438,7 @@ module tv80_core (/*AUTOARG*/
                 F[Flag_C] <= temp_c[8];
               end
         
-              if (ADDSPdd == 1'b1 && tstate[1])
+              if (ADDSPdd  && tstate[1])
               begin
                 F[Flag_Z] <= 1'b0;	
                 F[Flag_N] <= 1'b0;
@@ -446,8 +447,8 @@ module tv80_core (/*AUTOARG*/
               end
 
 
-				  if (Mode == 3)
-				    IStatus <= 2'b10;
+              if (Mode == 3)
+                IStatus <= 2'b10;
               else if (IMode != 2'b11 ) 
                 IStatus <= #1 IMode;
 
@@ -487,7 +488,7 @@ module tv80_core (/*AUTOARG*/
                       else if (Halt_FF == 1'b1 || (IntCycle == 1'b1 && IStatus == 2'b10) || NMICycle == 1'b1 ) 
                         begin
                           IR <= #1 8'b00000000;
-								  //TmpAddr[7:0] <= #1 dinst; // Special M1 vector fetch //CHANGED
+                          //TmpAddr[7:0] <= #1 dinst; // Special M1 vector fetch //CHANGED
                         end 
                       else 
                         begin
@@ -1004,17 +1005,17 @@ module tv80_core (/*AUTOARG*/
         RegAddrA = { Alternate, IncDec_16[1:0] };
       else if ((tstate[2] || (tstate[3] && mcycle[0] && IncDec_16[2] == 1'b1)) && IncDec_16[1:0] == 2'b10)
         RegAddrA = { XY_State[1], 2'b11 };
-      else if (ExchangeDH == 1'b1 && tstate[3])
+      else if (ExchangeDH && tstate[3])
         RegAddrA = { Alternate, 2'b10 };
-      else if (ExchangeDH == 1'b1 && tstate[4])
+      else if (ExchangeDH && tstate[4])
         RegAddrA = { Alternate, 2'b01 };
-      else if ( LDHLSP == 1'b1 && tstate[4])
-         RegAddrA = 3'b010 ;
+      else if ( LDHLSP && tstate[4])
+         RegAddrA = 3'b010;
       else
         RegAddrA = RegAddrA_r;
 
 
-      if (ExchangeDH == 1'b1 && tstate[3])
+      if (ExchangeDH && tstate[3])
         RegAddrB = { Alternate, 2'b01 };
       else
         RegAddrB = RegAddrB_r;
@@ -1048,7 +1049,7 @@ module tv80_core (/*AUTOARG*/
           RegWEL = 1'b1;
         end
 
-      if (LDHLSP == 1'b1 && mcycle[1] && tstate[4])
+      if (LDHLSP && mcycle[1] && tstate[4])
       begin
           RegWEH = 1'b1;
           RegWEL = 1'b1;
@@ -1068,30 +1069,28 @@ module tv80_core (/*AUTOARG*/
     end // always @ *
   
   
-  //TmpAddr2 <= std_logic_vector(unsigned(signed(SP) + signed(Save_Mux))); TODO: add this
-
-  always @(/*AUTOSENSE*/ExchangeDH or ID16 or IncDec_16 or RegBusA_r
-	   or RegBusB or Save_Mux or mcycle or tstate)
+  always @(/*AUTOSENSE*/ExchangeDH or ID16 or IncDec_16 or RegBusA_r or RegBusB or Save_Mux or mcycle or tstate or LDHLSP)
     begin
       RegDIH = Save_Mux;
       RegDIL = Save_Mux;
-		
-		/*if LDHLSP = '1' and MCycle = "010" and TState = 4 then  //TODO: add this
-			RegDIH <= TmpAddr2(15 downto 8);
-			RegDIL <= TmpAddr2(7 downto 0);
-		end if;*/
 
-      if (ExchangeDH == 1'b1 && tstate[3] ) 
+      if (LDHLSP && mcycle[1] && tstate[4]) 
+      begin
+        RegDIH = SP16[15:8];
+        RegDIL = SP16[7:0];
+      end
+
+      if (ExchangeDH && tstate[3] ) 
         begin
           RegDIH = RegBusB[15:8];
           RegDIL = RegBusB[7:0];
         end
-      else if (ExchangeDH == 1'b1 && tstate[4] ) 
+      else if (ExchangeDH && tstate[4] ) 
         begin
           RegDIH = RegBusA_r[15:8];
           RegDIL = RegBusA_r[7:0];
         end
-      else if (IncDec_16[2] == 1'b1 && ((tstate[2] && ~mcycle[0]) || (tstate[3] && mcycle[0])) ) 
+      else if (IncDec_16[2]  && ((tstate[2] && ~mcycle[0]) || (tstate[3] && mcycle[0])) ) 
         begin
           RegDIH = ID16[15:8];
           RegDIL = ID16[7:0];
@@ -1298,7 +1297,6 @@ module tv80_core (/*AUTOARG*/
             begin
               /*if (T_Res == 1'b1 ) // CHANGED
                 begin
-						
                   Auto_Wait_t1 <= #1 1'b0;
                 end 
               else 
@@ -1309,8 +1307,8 @@ module tv80_core (/*AUTOARG*/
               No_BTR <= #1 (I_BT && (~ IR[4] || ~ F[Flag_P])) ||
                         (I_BC && (~ IR[4] || F[Flag_Z] || ~ F[Flag_P])) ||
                         (I_BTR && (~ IR[4] || F[Flag_Z]));*/
-				  Auto_Wait_t1 <= Auto_Wait;
-				  Auto_Wait_t2 <= Auto_Wait_t1;
+              Auto_Wait_t1 <= Auto_Wait;
+              Auto_Wait_t2 <= Auto_Wait_t1;
               No_BTR <= #1 (I_BT && (~ IR[4] || ~ F[Flag_P])) ||
                         (I_BC && (~ IR[4] || F[Flag_Z] || ~ F[Flag_P])) ||
                         (I_BTR && (~ IR[4] || F[Flag_Z]));			  
@@ -1320,7 +1318,7 @@ module tv80_core (/*AUTOARG*/
                     begin
                       //if (!NMICycle) //CHANGED
                         IntE_FF1 <= #1 1'b1;
-								IntE_FF2 <= #1 1'b1;
+                        IntE_FF2 <= #1 1'b1;
                     end
                   if (I_RETN == 1'b1 ) 
                     begin
@@ -1411,7 +1409,7 @@ module tv80_core (/*AUTOARG*/
                       /*if ( ~(Auto_Wait == 1'b1 && Auto_Wait_t2 == 1'b0) &&
                            ~(IOWait == 1 && iorq_i == 1'b1 && Auto_Wait_t1 == 1'b0) ) */
 							 /*if Auto_Wait = '1' nand Auto_Wait_t2 = '0' then*/
-							 if (~(Auto_Wait == 1'b1 && Auto_Wait_t2 == 1'b0)) 
+                        if (~(Auto_Wait == 1'b1 && Auto_Wait_t2 == 1'b0)) 
                         begin
                           tstate <= #1 { tstate[5:0], tstate[6] };
                         end
@@ -1427,15 +1425,11 @@ module tv80_core (/*AUTOARG*/
 
 
   always @(/*AUTOSENSE*/BTR_r or DI_Reg or IncDec_16 or JumpE or PC
-	   or RegBusA or RegBusC or SP or tstate or ADDSPdd)
+	   or RegBusA or RegBusC or SP or tstate or LDHLSP or ADDSPdd)
     begin
       if (JumpE == 1'b1 ) 
         begin
           PC16_B = { {8{DI_Reg[7]}}, DI_Reg };
-        end 
-      else if (ADDSPdd == 1'b1 && tstate[2])
-        begin
-          PC16_B = { {8{Save_Mux[7]}}, Save_Mux };
         end
       else if (BTR_r == 1'b1 ) 
         begin
@@ -1445,10 +1439,15 @@ module tv80_core (/*AUTOARG*/
         begin
           PC16_B = 1;
         end
-
-      if (tstate[3])
+  
+      if ((LDHLSP && mcycle[1] && tstate[4]) || ( ADDSPdd && tstate[2] ))
+      begin
+          SP16_A = SP;
+          SP16_B = { {8{Save_Mux[7]}}, Save_Mux };
+      end
+      else if (tstate[3])
         begin
-          SP16_A = RegBusC;
+          SP16_A = SP;
           SP16_B = { {8{DI_Reg[7]}}, DI_Reg };
         end
       else

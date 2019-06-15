@@ -1619,7 +1619,7 @@ module tv80_mcode
                             MCycles = 3'b100;
                             case (1'b1) // MCycle
                               
-                              MCycle[3] :
+                              MCycle[2] :
                                 begin
                                   Inc_PC = 1'b1;
                                   ADDSPdd = 1'b1;
@@ -1651,18 +1651,18 @@ module tv80_mcode
                             // LD HL,SP+n 
                             MCycles = 3'b011;
                             case (1'b1) // MCycle
-                              MCycle[1] :
+                              MCycle[0] :
                                 begin
                                   Inc_PC = 1'b1;
                                 end
                               
-                              MCycle[2] :
+                              MCycle[1] :
                                 begin
                                   LDHLSP = 1'b1;
                                   Inc_PC = 1'b1;
                                 end
                               
-                              MCycle[3] :
+                              MCycle[2] :
                                 begin
                                   LDHLSP = 1'b1;
                                 end

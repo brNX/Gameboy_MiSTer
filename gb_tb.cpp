@@ -304,7 +304,9 @@ int main(int argc, char **argv) {
     top->isGBC = 0;
 
 
-    loadRom("roms/sh.gb", top);
+    //loadRom("roms/sh.gb", top);
+    loadRom("roms/03-op sp,hl.gb", top);
+    //loadRom("roms/ldhlsp.gb", top);
 
 
     top->eval ();  
@@ -398,8 +400,8 @@ int main(int argc, char **argv) {
                         if (Verilated::gotFinish()) run = false;
                     }
                     if (render) { //draw things 1 time
-                        drawBackground(background,renderer,top);
-                        drawTileMap(tilemap,renderer,top,0);
+                        //drawBackground(background,renderer,top);
+                        //drawTileMap(tilemap,renderer,top,0);
                         //drawTileMap(tilemap2,renderer,top,1);
                         drawLCD(lcd,renderer,top,isGBC);
                         for (int i=0;i<40;i++){
@@ -442,8 +444,8 @@ int main(int argc, char **argv) {
         if (Verilated::gotFinish()) run = false;
         
         if (render) { //draw things 1 time
-            drawBackground(background,renderer,top);
-            drawTileMap(tilemap,renderer,top,0);
+            //drawBackground(background,renderer,top);
+            //drawTileMap(tilemap,renderer,top,0);
             //drawTileMap(tilemap2,renderer,top,1);
             drawLCD(lcd,renderer,top,isGBC);
             for (int i=0;i<40;i++){
@@ -471,7 +473,7 @@ int main(int argc, char **argv) {
 
         //ImGui::ShowDemoWindow();
 
-        ImGui::Begin("Background");
+        /*ImGui::Begin("Background");
         ImGui::Image(background, ImVec2(256*2, 256*2));
         ImGui::End();
 
@@ -479,7 +481,7 @@ int main(int argc, char **argv) {
         ImGui::Image(tilemap, ImVec2(271, 407));
         ImGui::SameLine();
         ImGui::Image(tilemap2, ImVec2(271, 407));
-        ImGui::End();
+        ImGui::End();*/
 
         ImGui::Begin("LCD");
         ImGui::Image(lcd, ImVec2(160*3, 144*3));
