@@ -24,6 +24,8 @@
 
 #define DISABLE_TRACE
 
+const uint32_t verilator_cycles= 6*(2048*3);
+
 
 Uint32 timerTick(Uint32 interval, void *param)
 {
@@ -65,14 +67,17 @@ void loadRom(char * fileName, VGameboy* top) {
     fread(top->Gameboy->game_cart->rom_data, filelen, 1, fileptr); // Read in the entire file
     fclose(fileptr); // Close the file
 
-    top->eval();
+
 
     top->Gameboy->cart_mbc_type =  top->Gameboy->game_cart->rom_data[0x147];
     top->Gameboy->cart_rom_size =  top->Gameboy->game_cart->rom_data[0x148];
     top->Gameboy->cart_ram_size =  top->Gameboy->game_cart->rom_data[0x149];
     top->Gameboy->cart_cgb_flag =  top->Gameboy->game_cart->rom_data[0x143];
+    top->Gameboy->mbc1 = 1;
 
     top->eval();
+
+    printf("mbc1 %d mbc2  %d mbc3 %d mbc5 %d\n",top->Gameboy->mbc1,top->Gameboy->mbc2,top->Gameboy->mbc3,top->Gameboy->mbc5);
 
 
 }
@@ -301,12 +306,14 @@ int main(int argc, char **argv) {
     // initialize simulation inputs
     top->clk_sys = 1;
     top->reset = 1;
-    top->isGBC = 0;
 
 
     //loadRom("roms/sh.gb", top);
-    loadRom("roms/03-op sp,hl.gb", top);
+    loadRom("roms/gb240p.gbc", top);
+    //loadRom("roms/03-op sp,hl.gb", top);
     //loadRom("roms/ldhlsp.gb", top);
+    //loadRom("roms/cpu_instrs.gb", top);
+    //loadRom("roms/instr_timing.gb", top);
 
 
     top->eval ();  
@@ -334,15 +341,24 @@ int main(int argc, char **argv) {
 
 
     bool run = true;
-    bool isGBC = false;
+    bool isGBC = true;
     bool runVerilator = false;
     int lcd_mode = -1;
     int lcd_mode_old = -2;
     int spriteinfo=0;
     char spriteinfo_buffer [100];
+
+    uint32_t startclock = 0;
+    uint32_t deltaclock = 0;
+    uint32_t value = 0;
+
     
     while (run)
     {
+
+        startclock = SDL_GetTicks();
+
+
         ImGuiIO& io = ImGui::GetIO();
 
         int wheel = 0;
@@ -373,16 +389,20 @@ int main(int argc, char **argv) {
                     /* and now we can call the function we wanted to call in the timer but couldn't because of the multithreading problems */
                     bool render=false;
                     if (runVerilator){
-                        for (int z = 0; z<4*(2048*3);z++){
+                        for (int z = 0; z<verilator_cycles;z++){
                             i++;
                             top->reset = (i < 2);
                             top->isGBC = isGBC;
 
+
                             //setGBCPalettes(top);
                             // dump variables into VCD file and toggle clock
                             for (clk=0; clk<2; clk++) {
+                                
                                 #ifndef DISABLE_TRACE
+
                                 tfp->dump (2*i+clk);
+
                                 #endif
                                 top->clk_sys = !top->clk_sys;
                                 top->eval ();
@@ -400,13 +420,13 @@ int main(int argc, char **argv) {
                         if (Verilated::gotFinish()) run = false;
                     }
                     if (render) { //draw things 1 time
-                        //drawBackground(background,renderer,top);
-                        //drawTileMap(tilemap,renderer,top,0);
-                        //drawTileMap(tilemap2,renderer,top,1);
+                        drawBackground(background,renderer,top);
+                        drawTileMap(tilemap,renderer,top,0);
+                        drawTileMap(tilemap2,renderer,top,1);
                         drawLCD(lcd,renderer,top,isGBC);
-                        for (int i=0;i<40;i++){
+                        /*for (int i=0;i<40;i++){
                             drawSprite(sprites[i],renderer,sprites_array[i],top,isGBC);
-                        }
+                        }*/
                     }
 
                     break;
@@ -414,19 +434,21 @@ int main(int argc, char **argv) {
             }
         }
 
-
         bool render=false;
 
-        for (int z = 0; z<4*(2048*3);z++){
+        for (uint32_t z = 0; z<verilator_cycles;z++){
             i++;
             top->reset = (i < 2);
             top->isGBC = isGBC;
 
+
             //setGBCPalettes(top);
             // dump variables into VCD file and toggle clock
             for (clk=0; clk<2; clk++) {
+                
                 #ifndef DISABLE_TRACE
-                tfp->dump (2*i+clk);
+                //if (top->Gameboy->gb->video->ly<144 &&  (top->Gameboy->gb->video->h_cnt>78 && top->Gameboy->gb->video->h_cnt<95))
+                    tfp->dump (2*i+clk);
                 #endif
                 top->clk_sys = !top->clk_sys;
                 top->eval ();
@@ -436,7 +458,6 @@ int main(int argc, char **argv) {
                 if ((lcd_mode == 1) && (lcd_mode_old!=1)) {
                     render=true;
                 }
-
             }
 
 
@@ -444,13 +465,13 @@ int main(int argc, char **argv) {
         if (Verilated::gotFinish()) run = false;
         
         if (render) { //draw things 1 time
-            //drawBackground(background,renderer,top);
-            //drawTileMap(tilemap,renderer,top,0);
-            //drawTileMap(tilemap2,renderer,top,1);
+            drawBackground(background,renderer,top);
+            drawTileMap(tilemap,renderer,top,0);
+            drawTileMap(tilemap2,renderer,top,1);
             drawLCD(lcd,renderer,top,isGBC);
-            for (int i=0;i<40;i++){
+            /*for (int i=0;i<40;i++){
                 drawSprite(sprites[i],renderer,sprites_array[i],top,isGBC);
-            }
+            }*/
         }
 
 
@@ -473,7 +494,7 @@ int main(int argc, char **argv) {
 
         //ImGui::ShowDemoWindow();
 
-        /*ImGui::Begin("Background");
+        ImGui::Begin("Background");
         ImGui::Image(background, ImVec2(256*2, 256*2));
         ImGui::End();
 
@@ -481,7 +502,7 @@ int main(int argc, char **argv) {
         ImGui::Image(tilemap, ImVec2(271, 407));
         ImGui::SameLine();
         ImGui::Image(tilemap2, ImVec2(271, 407));
-        ImGui::End();*/
+        ImGui::End();
 
         ImGui::Begin("LCD");
         ImGui::Image(lcd, ImVec2(160*3, 144*3));
@@ -562,6 +583,8 @@ int main(int argc, char **argv) {
         ImGui::EndGroup();
         ImGui::End();*/
 
+        deltaclock = SDL_GetTicks() - startclock;
+
 
         ImGui::Begin("GB Config");
         ImGui::Checkbox("Enable Gameboy Color?",&isGBC);
@@ -583,11 +606,9 @@ int main(int argc, char **argv) {
         ImGui::SetNextItemWidth(100);
         ImGui::Checkbox("Bootrom enabled?",top->Gameboy->gb->boot_rom_enabled?&True:&False);
         ImGui::SetNextItemWidth(100);
-        ImGui::LabelText("Cart type","%d",top->Gameboy->cart_mbc_type);
+        
         ImGui::SetNextItemWidth(100);
-        ImGui::LabelText("cart_rom_size","%d",top->Gameboy->cart_rom_size);
-        ImGui::SetNextItemWidth(100);
-        ImGui::LabelText("cart_ram_size","%d",top->Gameboy->cart_ram_size);
+        ImGui::LabelText("Instructions per second","%d",value);
         ImGui::End();
 
         SDL_SetRenderDrawColor(renderer, 114, 144, 154, 255);
@@ -597,6 +618,14 @@ int main(int argc, char **argv) {
         ImGuiSDL::Render(ImGui::GetDrawData());
 
         SDL_RenderPresent(renderer);
+
+        deltaclock = SDL_GetTicks() - startclock;
+
+        value = (verilator_cycles*1000/deltaclock);
+
+
+
+
     }
 
     #ifndef DISABLE_TRACE

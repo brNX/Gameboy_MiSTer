@@ -166,18 +166,18 @@ wire [8:0] rom_mask =                    	 // 0 - 2 banks, 32k direct mapped
 		(cart_rom_size == 84)?9'b001111111:
                             9'b001111111;  //$54 - 96 banks = 1.5M
 
-wire mbc1 = (cart_mbc_type == 1) || (cart_mbc_type == 2) || (cart_mbc_type == 3);
-wire mbc2 = (cart_mbc_type == 5) || (cart_mbc_type == 6);
+wire mbc1 /*verilator public*/ = (cart_mbc_type == 1) || (cart_mbc_type == 2) || (cart_mbc_type == 3) ;
+wire mbc2 /*verilator public*/ = (cart_mbc_type == 5) || (cart_mbc_type == 6) ;
 //wire mmm01 = (cart_mbc_type == 11) || (cart_mbc_type == 12) || (cart_mbc_type == 13) || (cart_mbc_type == 14);
-wire mbc3 = (cart_mbc_type == 15) || (cart_mbc_type == 16) || (cart_mbc_type == 17) || (cart_mbc_type == 18) || (cart_mbc_type == 19);
+wire mbc3 /*verilator public*/ = (cart_mbc_type == 15) || (cart_mbc_type == 16) || (cart_mbc_type == 17) || (cart_mbc_type == 18) || (cart_mbc_type == 19) ;
 //wire mbc4 = (cart_mbc_type == 21) || (cart_mbc_type == 22) || (cart_mbc_type == 23);
-wire mbc5 = (cart_mbc_type == 25) || (cart_mbc_type == 26) || (cart_mbc_type == 27) || (cart_mbc_type == 28) || (cart_mbc_type == 29) || (cart_mbc_type == 30);
+wire mbc5 /*verilator public*/ = (cart_mbc_type == 25) || (cart_mbc_type == 26) || (cart_mbc_type == 27) || (cart_mbc_type == 28) || (cart_mbc_type == 29) || (cart_mbc_type == 30) ;
 //wire tama5 = (cart_mbc_type == 253);
 //wire tama6 = (cart_mbc_type == ???);
 //wire HuC1 = (cart_mbc_type == 254);
 //wire HuC3 = (cart_mbc_type == 255);
 
-wire [9:0] mbc_bank =
+wire [9:0] mbc_bank /*verilator public*/ =
 	mbc1?mbc1_addr:                  // MBC1, 16k bank 0, 16k bank 1-127 + ram
 	mbc2?mbc2_addr:                  // MBC2, 16k bank 0, 16k bank 1-15 + ram
 	mbc3?mbc3_addr:
@@ -187,7 +187,7 @@ wire [9:0] mbc_bank =
 //	HuC3?HuC3_addr:              
 	{8'd0, cart_addr[14:13]};  // no MBC, 32k linear address
 	
-wire isGBC_game = (cart_cgb_flag == 8'h80 || cart_cgb_flag == 8'hC0);
+wire isGBC_game /*verilator public*/ = (cart_cgb_flag == 8'h80 || cart_cgb_flag == 8'hC0);
 
 wire [23:0] cart_rom_addr = {1'b0, mbc_bank, cart_addr[12:0]};
 

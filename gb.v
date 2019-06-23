@@ -524,7 +524,7 @@ generic_spram #(13,8) vram1 (
 	.addr           ( vram_addr             ),
 	.we             ( vram1_wren            ),
 	.di             ( vram_di               ),
-	.dout           ( vram_do               )
+	.dout           ( vram1_do               )
 );
 
 //GBC VRAM banking
