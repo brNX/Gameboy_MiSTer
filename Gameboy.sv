@@ -193,12 +193,12 @@ pll pll
 );
 
 
-reg [7:0] pspad_div=0; //divide by 200
-reg pspad_clk;
+reg [6:0] pspad_div=0; //divide by 100
+reg pspad_clk=0;
 always @(posedge CLK_50M) 
 begin
 	pspad_div <= pspad_div+8'd1;
-	if (pspad_div==8'd199) begin
+	if (pspad_div==8'd99) begin
 		pspad_div <= 8'd0;
 		pspad_clk <= !pspad_clk;
 	end	
