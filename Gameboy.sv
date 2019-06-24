@@ -198,7 +198,7 @@ reg pspad_clk=0;
 always @(posedge CLK_50M) 
 begin
 	pspad_div <= pspad_div+8'd1;
-	if (pspad_div==8'd99) begin
+	if (pspad_div==8'd74) begin
 		pspad_div <= 8'd0;
 		pspad_clk <= !pspad_clk;
 	end	
@@ -214,7 +214,7 @@ wire [7:0] O_RXD_1, O_RXD_2;
 wire [15:0] joystick_0, joystick_1;
 wire [15:0] joystick = joystick_0 | joystick_1;
 
-assign joystick_0 = {O_RXD_2,O_RXD_1};
+assign joystick_0 = ~{8'd0,O_RXD_1[3],O_RXD_1[0],O_RXD_2[6],O_RXD_2[5],O_RXD_1[4],O_RXD_1[6],O_RXD_1[7],O_RXD_1[5]};
 
 assign USER_OUT[0]=1'b1; // unused
 assign USER_OUT[3]=1'b1; // unused
@@ -223,7 +223,7 @@ assign USER_OUT[4]=1'b1; //DAT
 psPAD_top psx(
 
 	.I_CLK250K(pspad_clk),       	//  MAIN CLK 250KHz
-	.I_RSTn(!RESET),             	//  MAIN RESET
+	.I_RSTn(!reset),             	//  MAIN RESET
 	.O_psCLK(USER_OUT[5]),        //  psCLK CLK OUT
 	.O_psSEL(USER_OUT[1]),        //  psSEL OUT       
 	.O_psTXD(USER_OUT[2]),        //  psTXD OUT
@@ -234,9 +234,9 @@ psPAD_top psx(
 	.O_RXD_4(),         				//  RX DATA 4 (8bit)
 	.O_RXD_5(),         				//  RX DATA 5 (8bit)
 	.O_RXD_6(),         				//  RX DATA 6 (8bit) 
-	.I_CONF_SW(1'b0),       		//  Dualshook Config  ACTIVE-HI
-	.I_MODE_SW(1'b0),       		//  Dualshook Mode Set DEGITAL PAD 0: ANALOG PAD 1:
-	.I_MODE_EN(1'b0),       		//  Dualshook Mode Control  OFF 0: ON 1:
+	.I_CONF_SW(1'b1),       		//  Dualshook Config  ACTIVE-HI
+	.I_MODE_SW(1'b1),       		//  Dualshook Mode Set DEGITAL PAD 0: ANALOG PAD 1:
+	.I_MODE_EN(1'b1),       		//  Dualshook Mode Control  OFF 0: ON 1:
 	.I_VIB_SW(2'd0),        		//  Vibration SW  VIB_SW[0] Small Moter OFF 0:ON  1:
 											//                VIB_SW[1] Bic Moter   OFF 0:ON  1(Dualshook Only)
 	.I_VIB_DAT(8'd0)        		//  Vibration(Bic Moter)Data   8'H00-8'HFF (Dualshook Only)
