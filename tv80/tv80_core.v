@@ -398,7 +398,7 @@ module tv80_core (/*AUTOARG*/
           mcycles <= #1 3'b000;
           dout <= #1 8'b00000000;
 
-          ACC <= #1 8'hFF;
+          ACC <= #1 8'h00;
           F <= #1 8'hFF;
           Ap <= #1 8'hFF;
           Fp <= #1 8'hFF;

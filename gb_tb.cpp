@@ -26,6 +26,9 @@
 
 const uint32_t verilator_cycles= 6*(2048*3);
 
+SDL_Texture* obpd[32];
+SDL_Texture* bgpd[32];
+
 
 Uint32 timerTick(Uint32 interval, void *param)
 {
@@ -235,6 +238,96 @@ void getSpriteInfo(VGameboy_sprite* sprite,char * spriteinfo){
     sprintf(spriteinfo,"X:%02X\nY:%02X\nT:%02X\nF:%02X",sprite->x_pos,sprite->y_pos,sprite->tile,sprite->flags);
 }
 
+void drawpalettes(SDL_Renderer* renderer, VGameboy* top) {
+    int currentindex=0;
+
+    for (int palette_index = 0; palette_index<8;palette_index++) {
+        
+        //bgpd
+        for (int i= 0; i<4;i++) {
+            SDL_SetRenderTarget(renderer, bgpd[palette_index*4+i]);
+            {
+
+                SDL_SetRenderDrawColor(renderer, 255, 255, 255,SDL_ALPHA_OPAQUE);
+                SDL_RenderClear(renderer);
+
+                int index = (palette_index<<3)+i*2;
+                
+                int r5 = top->Gameboy->gb->video->bgpd[index]&0x1F;
+                int g5 = ((top->Gameboy->gb->video->bgpd[index+1]&0x3)<<3) | ((top->Gameboy->gb->video->bgpd[index]&0xE0)>>5);
+                int b5 = (top->Gameboy->gb->video->bgpd[index+1]&0x7C)>>2;
+
+                int r10 = (r5 * 13) + (g5 * 2) +b5;
+                int g10 = (g5 * 3) + b5;
+                int b10 = (r5 * 3) + (g5 * 2) + (b5 * 11);
+                
+                SDL_Color palette;
+                
+                palette.r = (r10&0x1FE)>>1;
+                palette.g = (g10&0x7F)<<1;
+                palette.b = (b10&0x1FE)>>1;
+
+                palette.a = SDL_ALPHA_OPAQUE;
+                
+                //8 2bytes pairs
+                for (int y=0;y<8;y++){
+                    //8 pixels per line
+                    for (int x=0;x<8;x++){
+                        SDL_SetRenderDrawColor(renderer, palette.r, palette.g, palette.b,SDL_ALPHA_OPAQUE);
+                        SDL_RenderDrawPoint(renderer,x,y);
+                    }
+                }
+
+                SDL_SetRenderTarget(renderer, nullptr);
+            }
+            currentindex++;
+        }
+    }
+
+    for (int palette_index = 0; palette_index<8;palette_index++) {
+        //obpd
+        for (int i= 0; i<4;i++) {
+            SDL_SetRenderTarget(renderer, obpd[palette_index*4+i]);
+            {
+
+                SDL_SetRenderDrawColor(renderer, 255, 255, 255,SDL_ALPHA_OPAQUE);
+                SDL_RenderClear(renderer);
+
+                int index = (palette_index<<3)+i*2;
+                
+                int r5 = top->Gameboy->gb->video->obpd[index]&0x1F;
+                int g5 = ((top->Gameboy->gb->video->obpd[index+1]&0x3)<<3) | ((top->Gameboy->gb->video->obpd[index]&0xE0)>>5);
+                int b5 = (top->Gameboy->gb->video->obpd[index+1]&0x7C)>>2;
+
+                int r10 = (r5 * 13) + (g5 * 2) +b5;
+                int g10 = (g5 * 3) + b5;
+                int b10 = (r5 * 3) + (g5 * 2) + (b5 * 11);
+                
+                SDL_Color palette;
+                
+                palette.r = (r10&0x1FE)>>1;
+                palette.g = (g10&0x7F)<<1;
+                palette.b = (b10&0x1FE)>>1;
+
+                palette.a = SDL_ALPHA_OPAQUE;
+                
+                //8 2bytes pairs
+                for (int y=0;y<8;y++){
+                    //8 pixels per line
+                    for (int x=0;x<8;x++){
+                        SDL_SetRenderDrawColor(renderer, palette.r, palette.g, palette.b,SDL_ALPHA_OPAQUE);
+                        SDL_RenderDrawPoint(renderer,x,y);
+                    }
+                }
+
+
+                SDL_SetRenderTarget(renderer, nullptr);
+            }
+            currentindex++;
+        }
+    }
+}
+
 int main(int argc, char **argv) {
 	
     // Setup SDL
@@ -309,12 +402,15 @@ int main(int argc, char **argv) {
 
 
     //loadRom("roms/sh.gb", top);
-    loadRom("roms/gb240p.gbc", top);
+    //loadRom("roms/Radar Mission (UE) [!].gb", top);
+    //loadRom("roms/gb240p.gbc", top);
     //loadRom("roms/03-op sp,hl.gb", top);
     //loadRom("roms/ldhlsp.gb", top);
     //loadRom("roms/cpu_instrs.gb", top);
-    //loadRom("roms/instr_timing.gb", top);
-
+    //loadRom("roms/Super_Mario_Land_2_DX_Hack_v1.12_toruzz.gbc", top);
+    //loadRom("roms/Legend_of_ZeldaDX.gbc", top);
+    //loadRom("roms/drmario.gb", top);
+    loadRom("roms/Duck Tales (E) [!].gb", top);
 
     top->eval ();  
 
@@ -338,8 +434,11 @@ int main(int argc, char **argv) {
     for (int i =0; i<40;i++){
         sprites[i] = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB555, SDL_TEXTUREACCESS_TARGET, 8,8);  
     }
-
-
+    
+    for (int i =0; i<32;i++){
+        obpd[i] = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB555, SDL_TEXTUREACCESS_TARGET, 8,8); 
+        bgpd[i] = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB555, SDL_TEXTUREACCESS_TARGET, 8,8); 
+    }
     bool run = true;
     bool isGBC = true;
     bool runVerilator = false;
@@ -465,16 +564,15 @@ int main(int argc, char **argv) {
         if (Verilated::gotFinish()) run = false;
         
         if (render) { //draw things 1 time
-            drawBackground(background,renderer,top);
+            drawLCD(lcd,renderer,top,isGBC);
             drawTileMap(tilemap,renderer,top,0);
             drawTileMap(tilemap2,renderer,top,1);
-            drawLCD(lcd,renderer,top,isGBC);
-            /*for (int i=0;i<40;i++){
+            drawBackground(background,renderer,top);
+            drawpalettes(renderer,top);
+            /* for (int i=0;i<40;i++){
                 drawSprite(sprites[i],renderer,sprites_array[i],top,isGBC);
             }*/
         }
-
-
 
         int mouseX, mouseY;
         const int buttons = SDL_GetMouseState(&mouseX, &mouseY);
@@ -504,8 +602,58 @@ int main(int argc, char **argv) {
         ImGui::Image(tilemap2, ImVec2(271, 407));
         ImGui::End();
 
+        ImGui::Begin("Palettes");
+
+        ImGui::BeginGroup();
+        ImGui::Text("BGPD");
+        int currentindex=0;
+        for (int j=0;j<8;j++){
+            ImGui::Text("%d:",j);
+            ImGui::SameLine();
+            for (int i=0;i<4;i++) {
+                ImGui::Image(bgpd[currentindex], ImVec2(32, 32));
+                if (i!=3)
+                    ImGui::SameLine();
+                currentindex++;
+            }
+        }
+        ImGui::EndGroup();
+
+        ImGui::SameLine();
+        ImGui::Dummy(ImVec2(20.0f, 0.0f));
+        ImGui::SameLine();
+        
+        ImGui::BeginGroup();
+        ImGui::Text("OBPD");
+        currentindex=0;
+        for (int j=0;j<8;j++){
+            ImGui::Text("%d:",j);
+            ImGui::SameLine();
+            for (int i=0;i<4;i++) {
+                ImGui::Image(obpd[currentindex], ImVec2(32, 32));
+                if (i!=3)
+                    ImGui::SameLine();
+                currentindex++;
+            }
+        }
+        ImGui::EndGroup();
+    
+        ImGui::End();
+
         ImGui::Begin("LCD");
         ImGui::Image(lcd, ImVec2(160*3, 144*3));
+        ImGui::End();
+
+
+        ImGui::Begin("Palettes Background Text");
+        ImGui::Text("%04X",top->Gameboy->gb->video->bgpd[1]<<8|top->Gameboy->gb->video->bgpd[0]);
+        ImGui::SameLine();
+        ImGui::Text("%04X",top->Gameboy->gb->video->bgpd[3]<<8|top->Gameboy->gb->video->bgpd[2]);
+        ImGui::SameLine();
+        ImGui::Text("%04X",top->Gameboy->gb->video->bgpd[5]<<8|top->Gameboy->gb->video->bgpd[4]);
+        ImGui::SameLine();
+        ImGui::Text("%04X",top->Gameboy->gb->video->bgpd[7]<<8|top->Gameboy->gb->video->bgpd[6]);
+
         ImGui::End();
 
         /*ImGui::Begin("Sprites");
@@ -606,7 +754,13 @@ int main(int argc, char **argv) {
         ImGui::SetNextItemWidth(100);
         ImGui::Checkbox("Bootrom enabled?",top->Gameboy->gb->boot_rom_enabled?&True:&False);
         ImGui::SetNextItemWidth(100);
-        
+        ImGui::Checkbox("GBC game enabled?",top->Gameboy->isGBC_game?&True:&False);
+        ImGui::SetNextItemWidth(100);
+        ImGui::LabelText("BGP","%02X",top->Gameboy->gb->video->bgp);
+        ImGui::SetNextItemWidth(100);
+        ImGui::LabelText("OBP0","%02X",top->Gameboy->gb->video->obp0);
+        ImGui::SetNextItemWidth(100);
+        ImGui::LabelText("OBP1","%02X",top->Gameboy->gb->video->obp1);
         ImGui::SetNextItemWidth(100);
         ImGui::LabelText("Instructions per second","%d",value);
         ImGui::End();
@@ -623,9 +777,6 @@ int main(int argc, char **argv) {
 
         value = (verilator_cycles*1000/deltaclock);
 
-
-
-
     }
 
     #ifndef DISABLE_TRACE
@@ -638,6 +789,11 @@ int main(int argc, char **argv) {
     SDL_DestroyTexture(tilemap);
     SDL_DestroyTexture(tilemap2);
     SDL_DestroyTexture(lcd);
+   
+    for (int i =0; i<32;i++){
+        SDL_DestroyTexture(obpd[i]); 
+        SDL_DestroyTexture(bgpd[i]); 
+    }
 
     for (int i =0; i<40;i++){
         SDL_DestroyTexture(sprites[i]) ;

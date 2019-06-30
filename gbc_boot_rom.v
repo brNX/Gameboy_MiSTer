@@ -8,7 +8,7 @@ module gbc_boot_rom(
 reg [7:0] rom_data [2303:0];
 
 initial begin
-    $readmemh("gbc_boot.mem", rom_data);
+    $readmemh("gbc_boot-sameboy.mem", rom_data);
 end
 
 always @(posedge clk)

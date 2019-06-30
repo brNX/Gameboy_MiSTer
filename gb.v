@@ -454,6 +454,7 @@ video video (
 	.clk		    ( clk           ),
 	.clk_reg     ( clk_cpu       ),   //can be 2x in cgb double speed mode
 	.isGBC       ( isGBC         ),
+	.isGBC_game  ( isGBC_game|boot_rom_enabled),
 	
 
 	.irq         ( video_irq     ),
