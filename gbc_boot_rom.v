@@ -2,7 +2,7 @@
 module gbc_boot_rom(
 	input clk,
 	input [11:0] addr,
-	output [7:0] data
+	output reg [7:0] data
 );
 
 reg [7:0] rom_data [2303:0];

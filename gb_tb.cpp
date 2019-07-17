@@ -22,6 +22,9 @@
 
 #include "gb-draw-utils.h"
 
+#include <Core/gb.h>
+#include <Core/random.h>
+
 #define DISABLE_TRACE
 
 const uint32_t verilator_cycles= 6*(2048*3);
@@ -351,6 +354,8 @@ int main(int argc, char **argv) {
     tfp->open ("gb.vcd");
     #endif
 
+    GB_random_set_enabled(false);
+
 
     VGameboy_sprite * sprites_array[40];
     sprites_array[0]=top->Gameboy->gb->video->sprites->spr__BRA__0__KET____DOT__sprite;
@@ -401,7 +406,7 @@ int main(int argc, char **argv) {
     top->reset = 1;
 
 
-    //loadRom("roms/sh.gb", top);
+    loadRom("roms/sh.gb", top);
     //loadRom("roms/Radar Mission (UE) [!].gb", top);
     //loadRom("roms/gb240p.gbc", top);
     //loadRom("roms/03-op sp,hl.gb", top);
@@ -410,7 +415,7 @@ int main(int argc, char **argv) {
     //loadRom("roms/Super_Mario_Land_2_DX_Hack_v1.12_toruzz.gbc", top);
     //loadRom("roms/Legend_of_ZeldaDX.gbc", top);
     //loadRom("roms/drmario.gb", top);
-    loadRom("roms/Duck Tales (E) [!].gb", top);
+    //loadRom("roms/Xenon 2 - Megablast (USA, Europe).gb", top);
 
     top->eval ();  
 
@@ -546,7 +551,7 @@ int main(int argc, char **argv) {
             for (clk=0; clk<2; clk++) {
                 
                 #ifndef DISABLE_TRACE
-                //if (top->Gameboy->gb->video->ly<144 &&  (top->Gameboy->gb->video->h_cnt>78 && top->Gameboy->gb->video->h_cnt<95))
+                if (top->Gameboy->gb->boot_rom_enabled == 0 && top->Gameboy->gb->video->ly<144 &&  (top->Gameboy->gb->video->h_cnt>78 && top->Gameboy->gb->video->h_cnt<270))
                     tfp->dump (2*i+clk);
                 #endif
                 top->clk_sys = !top->clk_sys;
@@ -566,9 +571,9 @@ int main(int argc, char **argv) {
         if (render) { //draw things 1 time
             drawLCD(lcd,renderer,top,isGBC);
             drawTileMap(tilemap,renderer,top,0);
-            drawTileMap(tilemap2,renderer,top,1);
+            //drawTileMap(tilemap2,renderer,top,1);
             drawBackground(background,renderer,top);
-            drawpalettes(renderer,top);
+            //drawpalettes(renderer,top);
             /* for (int i=0;i<40;i++){
                 drawSprite(sprites[i],renderer,sprites_array[i],top,isGBC);
             }*/
@@ -598,11 +603,11 @@ int main(int argc, char **argv) {
 
         ImGui::Begin("TileMap");
         ImGui::Image(tilemap, ImVec2(271, 407));
-        ImGui::SameLine();
-        ImGui::Image(tilemap2, ImVec2(271, 407));
+        //ImGui::SameLine();
+        //ImGui::Image(tilemap2, ImVec2(271, 407));
         ImGui::End();
 
-        ImGui::Begin("Palettes");
+        /*ImGui::Begin("Palettes");
 
         ImGui::BeginGroup();
         ImGui::Text("BGPD");
@@ -638,14 +643,14 @@ int main(int argc, char **argv) {
         }
         ImGui::EndGroup();
     
-        ImGui::End();
+        ImGui::End();*/
 
         ImGui::Begin("LCD");
         ImGui::Image(lcd, ImVec2(160*3, 144*3));
         ImGui::End();
 
 
-        ImGui::Begin("Palettes Background Text");
+        /* ImGui::Begin("Palettes Background Text");
         ImGui::Text("%04X",top->Gameboy->gb->video->bgpd[1]<<8|top->Gameboy->gb->video->bgpd[0]);
         ImGui::SameLine();
         ImGui::Text("%04X",top->Gameboy->gb->video->bgpd[3]<<8|top->Gameboy->gb->video->bgpd[2]);
@@ -654,7 +659,7 @@ int main(int argc, char **argv) {
         ImGui::SameLine();
         ImGui::Text("%04X",top->Gameboy->gb->video->bgpd[7]<<8|top->Gameboy->gb->video->bgpd[6]);
 
-        ImGui::End();
+        ImGui::End();*/
 
         /*ImGui::Begin("Sprites");
         ImGui::BeginGroup();

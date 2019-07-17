@@ -32,6 +32,15 @@ module Gameboy
 
 wire [7:0] sdram_do;
 
+reg ce_pix, ce_cpu,ce_sys;
+//wire clk_sys_old =  clk_sys & ce_sys;
+wire ce_cpu2x = ce_pix;
+wire clk_cpu = clk_sys & ce_cpu;
+wire clk_cpu2x = clk_sys & ce_pix;
+
+wire [7:0] bios_do;
+wire [11:0] bios_addr;
+
 // ---------------------------------------------------------------
 // ----------------------------- MBC1 ----------------------------
 // ---------------------------------------------------------------
@@ -281,13 +290,6 @@ lcd lcd (
 
 );
 
-
-//wire clk_sys_old =  clk_sys & ce_sys;
-wire ce_cpu2x = ce_pix;
-wire clk_cpu = clk_sys & ce_cpu;
-wire clk_cpu2x = clk_sys & ce_pix;
-
-reg ce_pix, ce_cpu,ce_sys;
 reg [1:0] div = 0;
 always @(negedge clk_sys) begin
 	div <= div + 1'd1;
@@ -299,9 +301,6 @@ end
 
 
 ///////////////////////////// GBC BIOS /////////////////////////////////
-
-wire [7:0] bios_do;
-wire [11:0] bios_addr;
 
 gbc_boot_rom boot_rom_gbc (
 	.clk (clk_sys),
