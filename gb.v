@@ -231,7 +231,7 @@ CODES codes (
 // --------------------------------------------------------------------
 // --------------------- Speed Toggle KEY1 (GBC)-----------------------
 // --------------------------------------------------------------------
-reg cpu_speed; // - 0 Normal mode (4MHz) - 1 Double Speed Mode (8MHz)
+reg cpu_speed /*verilator public*/; // - 0 Normal mode (4MHz) - 1 Double Speed Mode (8MHz)
 reg prepare_switch; // set to 1 to toggle speed
 assign speed = cpu_speed;
 
@@ -367,8 +367,8 @@ reg [7:0] inputD, inputD2;
 // irq is low when an enable irq is active
 wire irq_n = !(ie_r & if_r);
 
-reg [4:0] if_r;
-reg [4:0] ie_r; // writing  $ffff sets the irq enable mask
+reg [4:0] if_r /*verilator public*/;
+reg [4:0] ie_r /*verilator public*/; // writing  $ffff sets the irq enable mask
 reg old_ack = 0;
 always @(negedge clk_cpu) begin //negedge to trigger interrupt earlier
 	
@@ -543,8 +543,8 @@ end
 wire [15:0] hdma_source_addr;
 wire [15:0] hdma_target_addr;
 wire [7:0] hdma_do;
-wire hdma_rd;
-wire hdma_active;
+wire hdma_rd /*verilator public*/;
+wire hdma_active /*verilator public*/;
 
 hdma hdma(
 	.reset	          ( reset         ),

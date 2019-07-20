@@ -472,7 +472,7 @@ reg [7:0] bg_tile_attr_old,bg_tile_attr_new; //GBC
 always @(posedge clk) begin
 
 	// every memory access is two pixel cycles
-	if(h_cnt[0]) begin
+	if(h_cnt_offset[0]) begin
 		if(bg_tile_map_rd) bg_tile <= vram_data;
 
 		if (isGBC&&isGBC_game) begin
@@ -488,7 +488,7 @@ always @(posedge clk) begin
 	end
 
 	// shift bg/window pixels out
-	if(bg_tile_obj_rd && h_cnt[0]) begin
+	if(bg_tile_obj_rd && h_cnt_offset[0]) begin
 	   bg_tile_attr_old <= bg_tile_attr_new;
 		tile_shift_0 <= bg_tile_data0;
 		tile_shift_1 <= bg_tile_data1;
@@ -526,6 +526,7 @@ wire vblank  = (v_cnt >= 144);
 reg [1:0] hextra_tiles;
 wire [7:0] hextra = { 3'b000, hextra_tiles, 3'b000 }+MODE3_OFFSET;
 wire hblank  = ((h_cnt < OAM_LEN) || (h_cnt >= 160+OAM_LEN+hextra));
+wire lcd_transfer_offset = (h_cnt < OAM_LEN+8); 
 wire oam     = (h_cnt <= OAM_LEN);                            // 80 clocks oam
 wire stage2  = ((h_cnt >= STAGE2) && (h_cnt < STAGE2+160));  // output out of stage2
 
@@ -556,9 +557,9 @@ always @(negedge clk) begin
 		// time to skip the pixels according to the horizontal scroll position
 		// (or the window start if line starts with window)
 		if(lcdc_win_ena && (v_cnt >= wy_r) && (wx_r < 8))
-			skip <= 8'd8 + (8'd7 - wx_r) - 8'd1;
+			skip <= 8'd16 + (8'd7 - wx_r) - 8'd1;
 		else
-			skip <= 8'd8 + {5'd0,scx_r[2:0]} - 8'd1;
+			skip <= 8'd16 + {5'd0,scx_r[2:0]} - 8'd1;
 
 		// calculate how many extra tiles will have to be read in this line
 		if(lcdc_win_ena && (v_cnt >= wy_r) && (wx_r < 168)) begin
@@ -597,11 +598,17 @@ always @(negedge clk) begin
 	end
 end
 
+
+reg [8:0] h_cnt /*verilator public*/;            // max 455
+reg [7:0] v_cnt /*verilator public*/;            // max 153
+
+wire [8:0] h_cnt_offset = h_cnt - 8'd8;
+
 // cycle through the B01s states
-wire bg_tile_map_rd = (!vblank) && (!hblank) && (h_cnt[2:1] == 2'b00);
-wire bg_tile_data0_rd = (!vblank) && (!hblank) && (h_cnt[2:1] == 2'b01);
-wire bg_tile_data1_rd = (!vblank) && (!hblank) && (h_cnt[2:1] == 2'b10);
-wire bg_tile_obj_rd = (!vblank) && (!hblank) && (h_cnt[2:1] == 2'b11);
+wire bg_tile_map_rd = (!vblank) && (!hblank) && (!lcd_transfer_offset) && (h_cnt_offset[2:1] == 2'b00);
+wire bg_tile_data0_rd = (!vblank) && (!hblank) && (!lcd_transfer_offset) && (h_cnt_offset[2:1] == 2'b01);
+wire bg_tile_data1_rd = (!vblank) && (!hblank) && (!lcd_transfer_offset) && (h_cnt_offset[2:1] == 2'b10);
+wire bg_tile_obj_rd = (!vblank) && (!hblank) && (!lcd_transfer_offset) && (h_cnt_offset[2:1] == 2'b11);
 
 // Mode 00:  h-blank
 // Mode 01:  v-blank
@@ -614,9 +621,6 @@ assign mode =
 	oam?2'b10:
 	hblank?2'b00:
 	2'b11;
-
-reg [8:0] h_cnt /*verilator public*/;            // max 455
-reg [7:0] v_cnt /*verilator public*/;            // max 153
 
 // line inside the background/window currently being drawn
 wire [7:0] win_line = v_cnt - wy_r;
@@ -642,7 +646,7 @@ always @(negedge clk) begin
 
 			// make sure sginals don't change during the line
 			// latch at latest possible moment (one clock before display starts)
-			if(h_cnt == OAM_LEN-2) begin
+			if(h_cnt == OAM_LEN+7) begin
 				scx_r <= scx;
 				wx_r <= wx;
 				scy_r <= scy;
@@ -651,7 +655,7 @@ always @(negedge clk) begin
 
 			// increment address at the end of each 8-pixel-cycle. But don't
 			// increment while waiting for current cycle to end due to window start
-			if(!hblank && h_cnt[2:0] == 3'b111 && (skip <= 8))
+			if(!hblank && !lcd_transfer_offset && h_cnt_offset[2:0] == 3'b111 && (skip <= 8))
 				bg_tile_map_addr[4:0] <= bg_tile_map_addr[4:0] + 1'd1;
 
 			// begin of line
@@ -687,8 +691,6 @@ always @(negedge clk) begin
 				// start of new image
 				v_cnt <= 8'd0;
 
-				// make sure sginals don't change during the image
-//				wy_r <= wy;
 			end
 		end
 	end

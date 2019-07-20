@@ -6,6 +6,8 @@
 #include "VGameboy_sprite.h"
 #include "VGameboy_Gameboy.h"
 #include "VGameboy_cart.h"
+#include "VGameboy_tv80_core.h"
+#include "VGameboy_tv80s.h"
 
 #include "VGameboy_generic_spram__Ad.h"
 #include "VGameboy_generic_spram__A7.h"
@@ -22,15 +24,22 @@
 
 #include "gb-draw-utils.h"
 
-#include <Core/gb.h>
-#include <Core/random.h>
+#define GB_INTERNAL 1
 
-#define DISABLE_TRACE
+#include <Core/gb.h>
+#include <Core/gb_wrapper.h>
+
+struct gbwrapper gb_sameboy;
+
+//#define DISABLE_TRACE
 
 const uint32_t verilator_cycles= 6*(2048*3);
 
 SDL_Texture* obpd[32];
 SDL_Texture* bgpd[32];
+
+
+uint32_t bitmap[160*144];
 
 
 Uint32 timerTick(Uint32 interval, void *param)
@@ -86,6 +95,19 @@ void loadRom(char * fileName, VGameboy* top) {
     printf("mbc1 %d mbc2  %d mbc3 %d mbc5 %d\n",top->Gameboy->mbc1,top->Gameboy->mbc2,top->Gameboy->mbc3,top->Gameboy->mbc5);
 
 
+}
+
+#define COMPARE(x,y)   if ((x)!=(y)) { printf(#x"!="#y"\n"); return false; }
+bool compareRegisters ( VGameboy* top) {
+    printf("PC: %X\n",top->Gameboy->gb->cpu->i_tv80_core->PC);
+    printf("sameboy pc: %X\n",gb_sameboy.pc);
+    printf("sameboy sp: %X\n",gb_sameboy.sp);
+    COMPARE(top->Gameboy->gb->cpu->i_tv80_core->PC,gb_sameboy.pc);
+    COMPARE(top->Gameboy->gb->cpu->i_tv80_core->ACC,gb_sameboy.a);
+    COMPARE(top->Gameboy->gb->cpu->i_tv80_core->F,gb_sameboy.f);
+    COMPARE(top->Gameboy->gb->cpu->i_tv80_core->SP,gb_sameboy.sp);
+    COMPARE(!top->Gameboy->gb->cpu->i_tv80_core->halt_n,gb_sameboy.halted);
+    return true;
 }
 
 /*void setGBCPalettes(VGameboy* top){
@@ -331,8 +353,21 @@ void drawpalettes(SDL_Renderer* renderer, VGameboy* top) {
     }
 }
 
+bool drawSameboy = false;
+
+static uint32_t rgb_encode(GB_gameboy_t *gb, uint8_t r, uint8_t g, uint8_t b)
+{
+    return (r << 24) | (g << 16) | (b << 8);
+}
+
+static void vblank(GB_gameboy_t *gb)
+{
+    printf("vblank\n");
+    drawSameboy = true;
+}
+
 int main(int argc, char **argv) {
-	
+
     // Setup SDL
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
     {
@@ -353,9 +388,6 @@ int main(int argc, char **argv) {
     top->trace (tfp, 99);
     tfp->open ("gb.vcd");
     #endif
-
-    GB_random_set_enabled(false);
-
 
     VGameboy_sprite * sprites_array[40];
     sprites_array[0]=top->Gameboy->gb->video->sprites->spr__BRA__0__KET____DOT__sprite;
@@ -405,21 +437,21 @@ int main(int argc, char **argv) {
     top->clk_sys = 1;
     top->reset = 1;
 
+    char filename[] = "roms/sh.gb";
+    
 
-    loadRom("roms/sh.gb", top);
-    //loadRom("roms/Radar Mission (UE) [!].gb", top);
-    //loadRom("roms/gb240p.gbc", top);
-    //loadRom("roms/03-op sp,hl.gb", top);
-    //loadRom("roms/ldhlsp.gb", top);
-    //loadRom("roms/cpu_instrs.gb", top);
-    //loadRom("roms/Super_Mario_Land_2_DX_Hack_v1.12_toruzz.gbc", top);
-    //loadRom("roms/Legend_of_ZeldaDX.gbc", top);
-    //loadRom("roms/drmario.gb", top);
-    //loadRom("roms/Xenon 2 - Megablast (USA, Europe).gb", top);
+    loadRom(filename, top);
+    // //loadRom("roms/Radar Mission (UE) [!].gb", top);
+    // //loadRom("roms/gb240p.gbc", top);
+    // //loadRom("roms/03-op sp,hl.gb", top);
+    // //loadRom("roms/ldhlsp.gb", top);
+    // //loadRom("roms/cpu_instrs.gb", top);
+    // //loadRom("roms/Super_Mario_Land_2_DX_Hack_v1.12_toruzz.gbc", top);
+    // //loadRom("roms/Legend_of_ZeldaDX.gbc", top);
+    // //loadRom("roms/drmario.gb", top);
+    // //loadRom("roms/Xenon 2 - Megablast (USA, Europe).gb", top);
 
     top->eval ();  
-
-    //SDL_TimerID my_timer_id = SDL_AddTimer(18, timerTick, NULL);
 
     const int window_x = 1980;
     const int window_y = 1080;
@@ -434,6 +466,7 @@ int main(int argc, char **argv) {
     SDL_Texture* tilemap = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB555, SDL_TEXTUREACCESS_TARGET, 271,407);
     SDL_Texture* tilemap2 = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB555, SDL_TEXTUREACCESS_TARGET, 271,407);
     SDL_Texture* lcd = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB555, SDL_TEXTUREACCESS_TARGET, 160,144);
+    SDL_Texture* lcd_sameboy = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB555, SDL_TEXTUREACCESS_TARGET, 160,144);
 
     SDL_Texture* sprites[40];
     for (int i =0; i<40;i++){
@@ -445,23 +478,22 @@ int main(int argc, char **argv) {
         bgpd[i] = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB555, SDL_TEXTUREACCESS_TARGET, 8,8); 
     }
     bool run = true;
-    bool isGBC = true;
+    bool isGBC = false;
     bool runVerilator = false;
     int lcd_mode = -1;
     int lcd_mode_old = -2;
     int spriteinfo=0;
     char spriteinfo_buffer [100];
 
-    uint32_t startclock = 0;
-    uint32_t deltaclock = 0;
     uint32_t value = 0;
 
+    GB_Init(filename,&bitmap[0]);
+
+    SDL_TimerID my_timer_id = SDL_AddTimer(18, timerTick, NULL);
+   
     
     while (run)
     {
-
-        startclock = SDL_GetTicks();
-
 
         ImGuiIO& io = ImGui::GetIO();
 
@@ -490,23 +522,21 @@ int main(int argc, char **argv) {
                     break;
     
                 case SDL_USEREVENT: {
-                    /* and now we can call the function we wanted to call in the timer but couldn't because of the multithreading problems */
                     bool render=false;
-                    if (runVerilator){
-                        for (int z = 0; z<verilator_cycles;z++){
+                    if (runVerilator){                   
+                        unsigned long currentclock = top->Gameboy->gb->clockcounter;
+                        unsigned long cycles_sameboy = runGB(&gb_sameboy);
+                        printf("sameboy pc: %X\n",gb_sameboy.pc);
+
+                        while (top->Gameboy->gb->clockcounter < ((cycles_sameboy-3)+currentclock-3)){
                             i++;
                             top->reset = (i < 2);
                             top->isGBC = isGBC;
-
-
-                            //setGBCPalettes(top);
-                            // dump variables into VCD file and toggle clock
                             for (clk=0; clk<2; clk++) {
                                 
                                 #ifndef DISABLE_TRACE
-
-                                tfp->dump (2*i+clk);
-
+                                //if (top->Gameboy->gb->boot_rom_enabled == 0 && top->Gameboy->gb->video->ly<144 &&  (top->Gameboy->gb->video->h_cnt>78 && top->Gameboy->gb->video->h_cnt<270))
+                                    tfp->dump (2*i+clk);
                                 #endif
                                 top->clk_sys = !top->clk_sys;
                                 top->eval ();
@@ -516,67 +546,37 @@ int main(int argc, char **argv) {
                                 if ((lcd_mode == 1) && (lcd_mode_old!=1)) {
                                     render=true;
                                 }
-
                             }
 
-    
                         }
+                        
                         if (Verilated::gotFinish()) run = false;
-                    }
-                    if (render) { //draw things 1 time
-                        drawBackground(background,renderer,top);
-                        drawTileMap(tilemap,renderer,top,0);
-                        drawTileMap(tilemap2,renderer,top,1);
-                        drawLCD(lcd,renderer,top,isGBC);
-                        /*for (int i=0;i<40;i++){
-                            drawSprite(sprites[i],renderer,sprites_array[i],top,isGBC);
-                        }*/
+
+                        if (!compareRegisters(top)) {
+                            run = false;
+                            printf("comparision failed at %d\n",top->Gameboy->gb->clockcounter);
+                        }
+
+                        if (render) { //draw things 1 time
+                            drawLCD(lcd,renderer,top,isGBC);
+                            drawTileMap(tilemap,renderer,top,0);
+                            //drawTileMap(tilemap2,renderer,top,1);
+                            drawBackground(background,renderer,top);
+                            //drawpalettes(renderer,top);
+                            //for (int i=0;i<40;i++){
+                            //    drawSprite(sprites[i],renderer,sprites_array[i],top,isGBC);
+                            //}
+                        }
+
+                        if (drawSameboy) { //draw things 1 time
+                            drawSameboy=false;
+                            //TODO: finish this
+                        }
                     }
 
                     break;
                 }
             }
-        }
-
-        bool render=false;
-
-        for (uint32_t z = 0; z<verilator_cycles;z++){
-            i++;
-            top->reset = (i < 2);
-            top->isGBC = isGBC;
-
-
-            //setGBCPalettes(top);
-            // dump variables into VCD file and toggle clock
-            for (clk=0; clk<2; clk++) {
-                
-                #ifndef DISABLE_TRACE
-                if (top->Gameboy->gb->boot_rom_enabled == 0 && top->Gameboy->gb->video->ly<144 &&  (top->Gameboy->gb->video->h_cnt>78 && top->Gameboy->gb->video->h_cnt<270))
-                    tfp->dump (2*i+clk);
-                #endif
-                top->clk_sys = !top->clk_sys;
-                top->eval ();
-                lcd_mode_old = lcd_mode;
-                lcd_mode = top->mode;
-
-                if ((lcd_mode == 1) && (lcd_mode_old!=1)) {
-                    render=true;
-                }
-            }
-
-
-        }
-        if (Verilated::gotFinish()) run = false;
-        
-        if (render) { //draw things 1 time
-            drawLCD(lcd,renderer,top,isGBC);
-            drawTileMap(tilemap,renderer,top,0);
-            //drawTileMap(tilemap2,renderer,top,1);
-            drawBackground(background,renderer,top);
-            //drawpalettes(renderer,top);
-            /* for (int i=0;i<40;i++){
-                drawSprite(sprites[i],renderer,sprites_array[i],top,isGBC);
-            }*/
         }
 
         int mouseX, mouseY;
@@ -647,6 +647,10 @@ int main(int argc, char **argv) {
 
         ImGui::Begin("LCD");
         ImGui::Image(lcd, ImVec2(160*3, 144*3));
+        ImGui::End();
+
+        ImGui::Begin("LCD Sameboy");
+        ImGui::Image(lcd_sameboy, ImVec2(160*3, 144*3));
         ImGui::End();
 
 
@@ -736,9 +740,6 @@ int main(int argc, char **argv) {
         ImGui::EndGroup();
         ImGui::End();*/
 
-        deltaclock = SDL_GetTicks() - startclock;
-
-
         ImGui::Begin("GB Config");
         ImGui::Checkbox("Enable Gameboy Color?",&isGBC);
         ImGui::Checkbox("Run?",&runVerilator);
@@ -777,11 +778,6 @@ int main(int argc, char **argv) {
         ImGuiSDL::Render(ImGui::GetDrawData());
 
         SDL_RenderPresent(renderer);
-
-        deltaclock = SDL_GetTicks() - startclock;
-
-        value = (verilator_cycles*1000/deltaclock);
-
     }
 
     #ifndef DISABLE_TRACE
@@ -794,6 +790,7 @@ int main(int argc, char **argv) {
     SDL_DestroyTexture(tilemap);
     SDL_DestroyTexture(tilemap2);
     SDL_DestroyTexture(lcd);
+    SDL_DestroyTexture(lcd_sameboy);
    
     for (int i =0; i<32;i++){
         SDL_DestroyTexture(obpd[i]); 
@@ -808,6 +805,8 @@ int main(int argc, char **argv) {
     SDL_DestroyWindow(window);
 
     ImGui::DestroyContext();
+
+    freeGB();
 
     return 0;  
 

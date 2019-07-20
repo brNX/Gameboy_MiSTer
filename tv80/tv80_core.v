@@ -74,14 +74,14 @@ module tv80_core (/*AUTOARG*/
 `ifdef TV80_REFRESH         
   reg    rfsh_n;   
 `endif             
-  reg    halt_n;                
+  reg    halt_n /*verilator public*/;                
   reg    busak_n;               
   reg [15:0] A; 
   reg [7:0]  dout;        
   reg [6:0]  mc;        
   reg [6:0]  ts;        
-  reg   intcycle_n;     
-  reg   IntE;           
+  reg   intcycle_n /*verilator public*/;     
+  reg   IntE /*verilator public*/;           
   reg   stop;           
 
   parameter     aNone    = 3'b111;
@@ -93,13 +93,13 @@ module tv80_core (/*AUTOARG*/
   parameter     aZI      = 3'b110;
 
   // Registers
-  reg [7:0]     ACC, F;
-  reg [7:0]     Ap, Fp;
+  reg [7:0]     ACC /*verilator public*/, F /*verilator public*/;
+  reg [7:0]     Ap /*verilator public*/ , Fp /*verilator public*/;
   reg [7:0]     I;
 `ifdef TV80_REFRESH
   reg [7:0]     R;
 `endif
-  reg [15:0]    SP, PC;
+  reg [15:0]    SP /*verilator public*/ , PC /*verilator public*/;
   reg [7:0]     RegDIH;
   reg [7:0]     RegDIL;
   wire [15:0]   RegBusA;
@@ -116,7 +116,7 @@ module tv80_core (/*AUTOARG*/
 
   // Help Registers
   reg [15:0]    TmpAddr;        // Temporary address register
-  reg [7:0]     IR;             // Instruction register
+  reg [7:0]     IR /*verilator public*/;             // Instruction register
   reg [1:0]     ISet;           // Instruction set selector
   reg [15:0]    RegBusA_r;
 
@@ -133,7 +133,7 @@ module tv80_core (/*AUTOARG*/
   reg           BusAck;
   reg           ClkEn;
   reg           NMI_s;
-  reg           INT_s;
+  reg           INT_s /*verilator public*/;
   reg [1:0]     IStatus;
 
   reg [7:0]     DI_Reg;

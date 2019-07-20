@@ -8,7 +8,7 @@ module boot_rom(
 reg [7:0] rom_data [255:0];
 
 initial begin
-    $readmemh("boot_rom.mem", rom_data);
+    $readmemh("boot_rom-sameboy.mem", rom_data);
 end
 
 always @(posedge clk)
