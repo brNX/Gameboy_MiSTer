@@ -436,8 +436,11 @@ end
 wire timer_irq;
 wire [7:0] timer_do;
 timer timer (
-	.reset	    ( reset_r         ),
-	.clk		    ( clk_cpu       ), //2x in fast mode
+    .reset      ( reset_r    ),
+    .clk        ( clk_cpu    ), //2x in fast mode
+    .isGBC      ( isGBC      ),
+    .sound_clk  (            ),
+
 
 	.irq         ( timer_irq     ),
 		
